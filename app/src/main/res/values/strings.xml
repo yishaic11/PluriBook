@@ -1,8 +1,13 @@
 <resources>
     <!-- App -->
     <string name="app_name">PluriBook</string>
-    <!-- Nav menu -->
+    <!-- Nav Menu -->
     <string name="nav_home">Home</string>
     <string name="nav_create_post">Create Post</string>
     <string name="nav_user_profile">User Profile</string>
+    <!-- Create Post-->
+    <string name="create_post_description_hint">Tell us about the book…</string>
+    <string name="create_post_save_button_text">Save</string>
+    <string name="create_post_cancel_button_text">Cancel</string>
+    <string name="create_post_image_view_content_desc">Upload an image for your post</string>
 </resources>
