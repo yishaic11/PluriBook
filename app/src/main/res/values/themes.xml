@@ -1,9 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.PluriBook" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-    </style>
+    <style name="Base.Theme.PluriBook" parent="Theme.Material3.DayNight.NoActionBar"></style>
 
     <style name="Theme.PluriBook" parent="Base.Theme.PluriBook" />
+
+    <style name="TransparentActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
+    </style>
 </resources>
