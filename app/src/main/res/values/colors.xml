@@ -2,4 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="pluri_light">#FFF8F0</color>
+    <color name="pluri_medium">#C08552</color>
+    <color name="pluri_dark">#8C5A3C</color>
+    <color name="pluri_darkest">#4B2E2B</color>
 </resources>
