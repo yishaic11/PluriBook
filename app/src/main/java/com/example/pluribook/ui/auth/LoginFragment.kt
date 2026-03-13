@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.pluribook.R
-import com.example.pluribook.utils.AuthState
+import com.example.pluribook.utils.ResourceState
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 
@@ -41,12 +41,12 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
         viewModel.authState.observe(viewLifecycleOwner) { state ->
             when (state) {
-                is AuthState.Loading -> {
+                is ResourceState.Loading -> {
                     buttonLogin.isEnabled = false
                     buttonLogin.setText(R.string.loading_logging_in)
                 }
 
-                is AuthState.Success -> {
+                is ResourceState.Success -> {
                     buttonLogin.isEnabled = true
                     buttonLogin.setText(R.string.login_button)
                     Toast.makeText(requireContext(), "Welcome back!", Toast.LENGTH_SHORT).show()
@@ -54,7 +54,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                 }
 
-                is AuthState.Error -> {
+                is ResourceState.Error -> {
                     buttonLogin.isEnabled = true
                     buttonLogin.setText(R.string.login_button)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()

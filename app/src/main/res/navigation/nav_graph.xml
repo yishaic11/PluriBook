@@ -40,7 +40,7 @@
 
     <fragment
         android:id="@+id/create_post_fragment"
-        android:name="com.example.pluribook.ui.post.CreatePostFragment"
+        android:name="com.example.pluribook.ui.posts.CreatePostFragment"
         android:label="@string/nav_create_post"
         tools:layout="@layout/fragment_create_post" />
 
