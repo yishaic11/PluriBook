@@ -32,14 +32,14 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val etEmail = view.findViewById<TextInputEditText>(R.id.etEmail)
-        val etPassword = view.findViewById<TextInputEditText>(R.id.etPassword)
-        val btnLogin = view.findViewById<MaterialButton>(R.id.btnLogin)
-        val tvGoToSignup = view.findViewById<TextView>(R.id.tvGoToSignup)
+        val editTextEmail = view.findViewById<TextInputEditText>(R.id.edit_text_signup_email)
+        val editTextPassword = view.findViewById<TextInputEditText>(R.id.edit_text_signup_password)
+        val buttonLogin = view.findViewById<MaterialButton>(R.id.button_login)
+        val textViewGoToSignup = view.findViewById<TextView>(R.id.text_view_go_to_signup)
 
-        btnLogin.setOnClickListener {
-            val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString().trim()
+        buttonLogin.setOnClickListener {
+            val email = editTextEmail.text.toString().trim()
+            val password = editTextPassword.text.toString().trim()
 
             if (email.isNotEmpty() && password.isNotEmpty()) {
                 viewModel.login(email, password)
@@ -49,28 +49,28 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
 
-        tvGoToSignup.setOnClickListener {
+        textViewGoToSignup.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_signUpFragment)
         }
 
         viewModel.authState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is AuthState.Loading -> {
-                    btnLogin.isEnabled = false
-                    btnLogin.text = "Logging in..."
+                    buttonLogin.isEnabled = false
+                    buttonLogin.setText(R.string.loading_logging_in)
                 }
 
                 is AuthState.Success -> {
-                    btnLogin.isEnabled = true
-                    btnLogin.text = "Log in"
+                    buttonLogin.isEnabled = true
+                    buttonLogin.setText(R.string.login_button)
                     Toast.makeText(requireContext(), "Welcome back!", Toast.LENGTH_SHORT).show()
 
                     findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                 }
 
                 is AuthState.Error -> {
-                    btnLogin.isEnabled = true
-                    btnLogin.text = "Log in"
+                    buttonLogin.isEnabled = true
+                    buttonLogin.setText(R.string.login_button)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
             }
