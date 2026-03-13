@@ -42,15 +42,15 @@ class MainActivity : AppCompatActivity() {
         val currentUser = FirebaseAuth.getInstance().currentUser
 
         if (currentUser != null) {
-            navGraph.setStartDestination(R.id.homeFragment)
+            navGraph.setStartDestination(R.id.home_fragment)
             syncCurrentUserToRoom(currentUser.uid)
         } else {
-            navGraph.setStartDestination(R.id.loginFragment)
+            navGraph.setStartDestination(R.id.login_fragment)
         }
         navController.graph = navGraph
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.loginFragment || destination.id == R.id.signUpFragment) {
+            if (destination.id == R.id.login_fragment || destination.id == R.id.signup_fragment) {
                 bottomNavigationView.visibility = View.GONE
             } else {
                 bottomNavigationView.visibility = View.VISIBLE
