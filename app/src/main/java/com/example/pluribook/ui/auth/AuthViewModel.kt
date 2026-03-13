@@ -1,34 +1,51 @@
 package com.example.pluribook.ui.auth
 
+import android.app.Application
 import android.net.Uri
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.pluribook.PluribookApplication
 import com.example.pluribook.data.repository.AuthRepository
 import com.example.pluribook.utils.AuthState
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import com.example.pluribook.TAG
 
-class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
+class AuthViewModel(application: Application) : AndroidViewModel(application) {
+    private val userDao = (application as PluribookApplication).database.userDao()
+    private val repository = AuthRepository(
+        FirebaseAuth.getInstance(),
+        FirebaseFirestore.getInstance(),
+        FirebaseStorage.getInstance(),
+        userDao
+    )
+
     private val _authState = MutableLiveData<AuthState>()
     val authState: LiveData<AuthState> = _authState
 
     fun login(email: String, password: String) {
         _authState.value = AuthState.Loading
 
-        repository.getFirebaseAuth().signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = task.result?.user
-                    viewModelScope.launch {
-                        user?.uid?.let { repository.syncUserToLocalDatabase(it) }
-                        _authState.value = AuthState.Success(user)
-                    }
-                } else {
-                    _authState.value = AuthState.Error(task.exception?.message ?: "Login failed")
-                }
+        viewModelScope.launch {
+            try {
+                val result =
+                    repository.getFirebaseAuth().signInWithEmailAndPassword(email, password).await()
+                val user = result.user
+
+                user?.uid?.let { repository.syncUserToLocalDatabase(it) }
+                _authState.value = AuthState.Success(user)
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in login")
+                _authState.value = AuthState.Error(e.message ?: "Login failed")
             }
+        }
     }
 
     fun signup(email: String, password: String, username: String, imageUri: Uri?) {
@@ -39,34 +56,27 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
 
         _authState.value = AuthState.Loading
 
-        repository.getFirebaseAuth().createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val firebaseUser = task.result?.user
-                    viewModelScope.launch {
-                        val success = firebaseUser?.let {
-                            repository.registerUser(it.uid, email, username, imageUri)
-                        } ?: false
+        viewModelScope.launch {
+            try {
+                val result =
+                    repository.getFirebaseAuth().createUserWithEmailAndPassword(email, password)
+                        .await()
+                val firebaseUser = result.user
 
-                        if (success) {
-                            _authState.value = AuthState.Success(firebaseUser)
-                        } else {
-                            _authState.value = AuthState.Error("Failed to save user profile.")
-                        }
-                    }
+                val success = firebaseUser?.let {
+                    repository.registerUser(it.uid, email, username, imageUri)
+                } ?: false
+
+                if (success) {
+                    _authState.value = AuthState.Success(firebaseUser)
                 } else {
-                    _authState.value = AuthState.Error(task.exception?.message ?: "Signup failed")
+                    _authState.value = AuthState.Error("Failed to save user profile.")
                 }
-            }
-    }
-}
 
-class AuthViewModelFactory(private val repository: AuthRepository) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return AuthViewModel(repository) as T
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in signup")
+                _authState.value = AuthState.Error(e.message ?: "Signup failed")
+            }
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

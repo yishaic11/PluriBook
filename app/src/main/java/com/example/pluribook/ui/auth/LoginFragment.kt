@@ -18,16 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 
 class LoginFragment : Fragment(R.layout.fragment_login) {
-    private val viewModel: AuthViewModel by viewModels {
-        val application = requireActivity().application as PluribookApplication
-        val repository = AuthRepository(
-            FirebaseAuth.getInstance(),
-            FirebaseFirestore.getInstance(),
-            FirebaseStorage.getInstance(),
-            application.database.userDao()
-        )
-        AuthViewModelFactory(repository)
-    }
+    private val viewModel: AuthViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
