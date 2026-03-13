@@ -1,6 +1,7 @@
-package com.example.pluribook
+package com.example.pluribook.ui.home
 
 import androidx.fragment.app.Fragment
+import com.example.pluribook.R
 
 class HomeFragment: Fragment(R.layout.fragment_home) {
 }

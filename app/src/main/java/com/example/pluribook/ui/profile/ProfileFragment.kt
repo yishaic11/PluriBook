@@ -1,6 +1,7 @@
-package com.example.pluribook
+package com.example.pluribook.ui.profile
 
 import androidx.fragment.app.Fragment
+import com.example.pluribook.R
 
 class ProfileFragment: Fragment(R.layout.fragment_profile) {
 }
