@@ -9,17 +9,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.pluribook.PluribookApplication
 import com.example.pluribook.R
-import com.example.pluribook.data.repository.AuthRepository
 import com.example.pluribook.utils.AuthState
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 
 class SignUpFragment : Fragment(R.layout.fragment_signup) {
