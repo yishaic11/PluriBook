@@ -1,4 +1,4 @@
-package com.example.pluribook
+package com.example.pluribook.ui.post
 
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import com.example.pluribook.R
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
