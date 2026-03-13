@@ -29,7 +29,7 @@ class AuthRepository(
             }
             auth.currentUser?.updateProfile(profileUpdates)?.await()
 
-            val newUser = User(email = email, username = username, photoUrl = downloadUrl)
+            val newUser = User(email = email, username = username, photoUrl = downloadUrl, uid = uid)
             firestore.collection("users").document(uid).set(newUser).await()
 
             userDao.saveUser(newUser)
@@ -48,7 +48,8 @@ class AuthRepository(
                 val user = User(
                     email = document.getString("email") ?: "",
                     username = document.getString("username") ?: "Unknown",
-                    photoUrl = document.getString("photoUrl") ?: ""
+                    photoUrl = document.getString("photoUrl") ?: "",
+                    uid = uid
                 )
                 userDao.saveUser(user)
             }

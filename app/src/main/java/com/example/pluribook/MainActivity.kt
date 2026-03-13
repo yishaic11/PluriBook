@@ -6,10 +6,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.example.pluribook.data.model.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,8 +39,11 @@ class MainActivity : AppCompatActivity() {
         val navInflater = navController.navInflater
         val navGraph = navInflater.inflate(R.navigation.nav_graph)
 
-        if (FirebaseAuth.getInstance().currentUser != null) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+
+        if (currentUser != null) {
             navGraph.setStartDestination(R.id.homeFragment)
+            syncCurrentUserToRoom(currentUser.uid)
         } else {
             navGraph.setStartDestination(R.id.loginFragment)
         }
@@ -45,6 +54,30 @@ class MainActivity : AppCompatActivity() {
                 bottomNavigationView.visibility = View.GONE
             } else {
                 bottomNavigationView.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun syncCurrentUserToRoom(uid: String) {
+        val db = FirebaseFirestore.getInstance()
+        val userDao = (application as PluribookApplication).database.userDao()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val document = db.collection("users").document(uid).get().await()
+
+                if (document.exists()) {
+                    val updatedUser = User(
+                        uid = uid,
+                        email = document.getString("email") ?: "",
+                        username = document.getString("username") ?: "Unknown",
+                        photoUrl = document.getString("photoUrl") ?: ""
+                    )
+
+                    userDao.saveUser(updatedUser)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
