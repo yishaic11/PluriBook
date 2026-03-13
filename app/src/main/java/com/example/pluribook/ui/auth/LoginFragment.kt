@@ -7,15 +7,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.pluribook.PluribookApplication
 import com.example.pluribook.R
-import com.example.pluribook.data.repository.AuthRepository
 import com.example.pluribook.utils.AuthState
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 
 class LoginFragment : Fragment(R.layout.fragment_login) {
     private val viewModel: AuthViewModel by viewModels()
