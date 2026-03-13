@@ -20,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/image_view_post_image"
+        android:id="@+id/material_card_view_post_image"
         android:layout_width="0dp"
         android:layout_height="400dp"
         android:layout_marginStart="24dp"
@@ -35,6 +35,7 @@
         app:strokeWidth="2dp">
 
         <ImageView
+            android:id="@+id/image_view_create_post"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/pluri_light"
@@ -57,11 +58,11 @@
         android:layout_marginBottom="8dp"
         android:hint="@string/create_post_description_hint"
         app:boxStrokeColor="@color/pluri_dark"
-        app:layout_constraintBottom_toTopOf="@id/buttonsLinearLayout"
+        app:layout_constraintBottom_toTopOf="@id/buttons_linear_layout"
         app:layout_constraintCircleRadius="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/image_view_post_image">
+        app:layout_constraintTop_toBottomOf="@id/material_card_view_post_image">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_text_description"
@@ -74,7 +75,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout
-        android:id="@+id/buttonsLinearLayout"
+        android:id="@+id/buttons_linear_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
