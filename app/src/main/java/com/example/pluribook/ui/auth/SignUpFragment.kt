@@ -35,13 +35,13 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
     }
 
     private var selectedImageUri: Uri? = null
-    private var imgProfile: ShapeableImageView? = null
+    private var imageProfile: ShapeableImageView? = null
 
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
                 selectedImageUri = it
-                imgProfile?.let { view ->
+                imageProfile?.let { view ->
                     Picasso.get().load(it).fit().centerCrop().into(view)
                 }
             }
@@ -50,22 +50,23 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val etUsername = view.findViewById<TextInputEditText>(R.id.etUsername)
-        val etEmail = view.findViewById<TextInputEditText>(R.id.etEmail)
-        val etPassword = view.findViewById<TextInputEditText>(R.id.etPassword)
-        val btnSignup = view.findViewById<MaterialButton>(R.id.btnSignup)
-        val tvGoToLogin = view.findViewById<TextView>(R.id.tvGoToLogin)
-        val btnSelectPhoto = view.findViewById<ExtendedFloatingActionButton>(R.id.btnSelectPhoto)
-        imgProfile = view.findViewById(R.id.imgProfile)
+        val editTextUsername = view.findViewById<TextInputEditText>(R.id.edit_text_signup_username)
+        val editTextEmail = view.findViewById<TextInputEditText>(R.id.edit_text_signup_email)
+        val editTextPassword = view.findViewById<TextInputEditText>(R.id.edit_text_signup_password)
+        val buttonSignup = view.findViewById<MaterialButton>(R.id.button_signup)
+        val textViewGoToSignup = view.findViewById<TextView>(R.id.text_view_go_to_login)
+        val buttonSelectPhoto =
+            view.findViewById<ExtendedFloatingActionButton>(R.id.button_signup_select_photo)
+        imageProfile = view.findViewById(R.id.image_view_signup_profile)
 
-        btnSelectPhoto.setOnClickListener {
+        buttonSelectPhoto.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
 
-        btnSignup.setOnClickListener {
-            val username = etUsername.text.toString().trim()
-            val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString().trim()
+        buttonSignup.setOnClickListener {
+            val username = editTextUsername.text.toString().trim()
+            val email = editTextEmail.text.toString().trim()
+            val password = editTextPassword.text.toString().trim()
 
             if (username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
                 viewModel.signup(email, password, username, selectedImageUri)
@@ -75,20 +76,20 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
             }
         }
 
-        tvGoToLogin.setOnClickListener {
+        textViewGoToSignup.setOnClickListener {
             findNavController().popBackStack()
         }
 
         viewModel.authState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is AuthState.Loading -> {
-                    btnSignup.isEnabled = false
-                    btnSignup.text = "Creating account & uploading photo..."
+                    buttonSignup.isEnabled = false
+                    buttonSignup.setText(R.string.loading_creating_account)
                 }
 
                 is AuthState.Success -> {
-                    btnSignup.isEnabled = true
-                    btnSignup.text = "Sign up"
+                    buttonSignup.isEnabled = true
+                    buttonSignup.setText(R.string.signup_button)
                     Toast.makeText(
                         requireContext(),
                         "Account created successfully!",
@@ -99,8 +100,8 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
                 }
 
                 is AuthState.Error -> {
-                    btnSignup.isEnabled = true
-                    btnSignup.text = "Sign up"
+                    buttonSignup.isEnabled = true
+                    buttonSignup.setText(R.string.signup_button)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -109,6 +110,6 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        imgProfile = null
+        imageProfile = null
     }
 }

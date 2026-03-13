@@ -1,8 +1,24 @@
 <resources>
     <!-- App -->
     <string name="app_name">PluriBook</string>
+    <string name="app_logo">PluriBook logo</string>
     <!-- Nav menu -->
     <string name="nav_home">Home</string>
     <string name="nav_create_post">Create Post</string>
     <string name="nav_user_profile">User Profile</string>
+    <string name="nav_login">Login</string>
+    <string name="nav_signup">Sign Up</string>
+    <!-- Login & Signup -->
+    <string name="login_title">Sign in to your account</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="username_hint">Username</string>
+    <string name="login_button">Log in</string>
+    <string name="login_move_to_signup">"Don't have an account? "</string>
+    <string name="signup_button">Sign up</string>
+    <string name="signup_title">Create an account</string>
+    <string name="signup_add_photo">Add profile photo</string>
+    <string name="signup_move_to_login">"Already have an account? "</string>
+    <string name="loading_creating_account">Creating account…</string>
+    <string name="loading_logging_in">Logging in…</string>
 </resources>

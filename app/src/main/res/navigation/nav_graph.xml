@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.pluribook.ui.auth.LoginFragment"
-        android:label="Login"
+        android:label="@string/nav_login"
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_signUpFragment"
@@ -23,7 +23,7 @@
     <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.pluribook.ui.auth.SignUpFragment"
-        android:label="Sign Up"
+        android:label="@string/nav_signup"
         tools:layout="@layout/fragment_signup">
         <action
             android:id="@+id/action_signUpFragment_to_homeFragment"
@@ -35,18 +35,18 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.pluribook.ui.home.HomeFragment"
-        android:label="Home"
+        android:label="@string/nav_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/createPostFragment"
         android:name="com.example.pluribook.ui.post.CreatePostFragment"
-        android:label="Create Post"
+        android:label="@string/nav_create_post"
         tools:layout="@layout/fragment_create_post" />
 
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.pluribook.ui.profile.ProfileFragment"
-        android:label="Profile"
+        android:label="@string/nav_user_profile"
         tools:layout="@layout/fragment_profile" />
 </navigation>
