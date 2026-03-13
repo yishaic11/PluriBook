@@ -1,4 +1,4 @@
-package com.example.pluribook.ui.post
+package com.example.pluribook.ui.posts
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -9,8 +9,11 @@ import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.pluribook.R
+import com.example.pluribook.ui.post.PostViewModel
+import com.example.pluribook.utils.ResourceState
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -23,6 +26,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
     private var selectedImageUri: Uri? = null
     private lateinit var imageView: ImageView
 
+    private val postViewModel: PostViewModel by viewModels()
     private val pickMediaLauncher = registerForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
@@ -78,9 +82,26 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             btnSave.isEnabled = false
             btnSave.text = "Uploading..."
 
-            // TODO: Pass `selectedImageUri!!` and `description` to the ViewModel
-            Toast.makeText(requireContext(), "Ready to send Uri to ViewModel!", Toast.LENGTH_SHORT)
-                .show()
+            postViewModel.createPost(selectedImageUri, description)
+        }
+
+        postViewModel.postState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is ResourceState.Loading -> {
+                    btnSave.isEnabled = false
+                    btnSave.text = "Publishing..."
+                }
+                is ResourceState.Success -> {
+                    btnSave.isEnabled = true
+                    Toast.makeText(requireContext(), "Post published!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.home_fragment)
+                }
+                is ResourceState.Error -> {
+                    btnSave.isEnabled = true
+                    btnSave.text = "Save"
+                    Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 
