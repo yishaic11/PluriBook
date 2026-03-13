@@ -23,16 +23,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 
 class SignUpFragment : Fragment(R.layout.fragment_signup) {
-    private val viewModel: AuthViewModel by viewModels {
-        val application = requireActivity().application as PluribookApplication
-        val repository = AuthRepository(
-            FirebaseAuth.getInstance(),
-            FirebaseFirestore.getInstance(),
-            FirebaseStorage.getInstance(),
-            application.database.userDao()
-        )
-        AuthViewModelFactory(repository)
-    }
+    private val viewModel: AuthViewModel by viewModels()
 
     private var selectedImageUri: Uri? = null
     private var imageProfile: ShapeableImageView? = null
