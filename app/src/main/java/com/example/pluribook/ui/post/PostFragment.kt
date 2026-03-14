@@ -51,11 +51,11 @@ class PostFragment : Fragment(R.layout.fragment_post) {
 
         buttonBack.setOnClickListener { findNavController().navigateUp() }
 
-        viewModel.authorName.observe(viewLifecycleOwner) { name ->
+        viewModel.senderName.observe(viewLifecycleOwner) { name ->
             textSenderName.text = name
         }
 
-        viewModel.authorPhotoUrl.observe(viewLifecycleOwner) { photoUrl ->
+        viewModel.senderPhotoUrl.observe(viewLifecycleOwner) { photoUrl ->
             if (photoUrl.isNotEmpty()) {
                 Picasso.get()
                     .load(photoUrl)
