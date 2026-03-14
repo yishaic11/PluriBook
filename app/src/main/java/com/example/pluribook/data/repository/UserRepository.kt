@@ -11,7 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
-class AuthRepository(
+class UserRepository(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage,
@@ -37,8 +37,14 @@ class AuthRepository(
             }
             auth.currentUser?.updateProfile(profileUpdates)?.await()
 
-            val newUser = User(email = email, username = username, photoUrl = downloadUrl, uid = uid)
-            firestore.collection(USERS_COLLECTION).document(uid).set(newUser).await()
+            val newUser = User(
+                uid = uid,
+                email = email,
+                username = username,
+                photoUrl = downloadUrl,
+                likedPosts = emptyList()
+            )
+            firestore.collection("users").document(uid).set(newUser).await()
 
             userDao.saveUser(newUser)
 
@@ -54,11 +60,16 @@ class AuthRepository(
         try {
             val document = firestore.collection(USERS_COLLECTION).document(uid).get().await()
             if (document.exists()) {
+                val likedPosts = (document.get("likedPosts") as? List<*>)
+                    ?.filterIsInstance<String>()
+                    ?: emptyList()
+
                 val user = User(
+                    uid = uid,
                     email = document.getString("email") ?: "",
                     username = document.getString("username") ?: "Unknown",
                     photoUrl = document.getString("photoUrl") ?: "",
-                    uid = uid
+                    likedPosts = likedPosts
                 )
                 userDao.saveUser(user)
             }

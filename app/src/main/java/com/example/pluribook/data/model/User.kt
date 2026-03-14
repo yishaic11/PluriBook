@@ -8,5 +8,6 @@ data class User(
     @PrimaryKey val uid: String,
     val username: String,
     val photoUrl: String,
-    val email: String
+    val email: String,
+    val likedPosts: List<String> = emptyList()
 )

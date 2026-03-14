@@ -68,11 +68,16 @@ class MainActivity : AppCompatActivity() {
                 val document = db.collection("users").document(uid).get().await()
 
                 if (document.exists()) {
+                    val likedPosts = (document.get("likedPosts") as? List<*>)
+                        ?.filterIsInstance<String>()
+                        ?: emptyList()
+
                     val updatedUser = User(
                         uid = uid,
                         email = document.getString("email") ?: "",
                         username = document.getString("username") ?: "Unknown",
-                        photoUrl = document.getString("photoUrl") ?: ""
+                        photoUrl = document.getString("photoUrl") ?: "",
+                        likedPosts = likedPosts
                     )
 
                     userDao.saveUser(updatedUser)
