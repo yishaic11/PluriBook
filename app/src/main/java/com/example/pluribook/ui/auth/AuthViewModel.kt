@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.pluribook.PluribookApplication
-import com.example.pluribook.data.repository.AuthRepository
+import com.example.pluribook.data.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -20,12 +20,7 @@ import com.google.firebase.auth.FirebaseUser
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val userDao = (application as PluribookApplication).database.userDao()
-    private val repository = AuthRepository(
-        FirebaseAuth.getInstance(),
-        FirebaseFirestore.getInstance(),
-        FirebaseStorage.getInstance(),
-        userDao
-    )
+    private val repository = UserRepository(userDao)
 
     private val _authState = MutableLiveData<ResourceState<FirebaseUser?>>()
     val authState: LiveData<ResourceState<FirebaseUser?>> = _authState

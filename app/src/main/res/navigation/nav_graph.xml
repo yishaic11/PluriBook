@@ -36,17 +36,65 @@
         android:id="@+id/home_fragment"
         android:name="com.example.pluribook.ui.home.HomeFragment"
         android:label="@string/nav_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_fragment_to_post_fragment"
+            app:destination="@id/post_fragment" />
+        <action
+            android:id="@+id/action_home_fragment_to_profile_fragment"
+            app:destination="@id/profile_fragment"
+            app:launchSingleTop="true" />
+        <action
+            android:id="@+id/action_home_fragment_to_create_post_fragment"
+            app:destination="@id/create_post_fragment"
+            app:launchSingleTop="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/create_post_fragment"
         android:name="com.example.pluribook.ui.post.CreatePostFragment"
         android:label="@string/nav_create_post"
-        tools:layout="@layout/fragment_create_post" />
+        tools:layout="@layout/fragment_create_post">
+        <action
+            android:id="@+id/action_create_post_to_home"
+            app:destination="@id/home_fragment"
+            app:popUpTo="@id/home_fragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_create_post_fragment_to_profile_fragment"
+            app:destination="@id/profile_fragment"
+            app:launchSingleTop="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/profile_fragment"
         android:name="com.example.pluribook.ui.profile.ProfileFragment"
         android:label="@string/nav_user_profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profile_fragment_to_home_fragment"
+            app:destination="@id/home_fragment"
+            app:launchSingleTop="true" />
+        <action
+            android:id="@+id/action_profile_fragment_to_create_post_fragment"
+            app:destination="@id/create_post_fragment"
+            app:launchSingleTop="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/post_fragment"
+        android:name="com.example.pluribook.ui.post.PostFragment"
+        android:label="@string/nav_post"
+        tools:layout="@layout/fragment_post">
+        <action
+            android:id="@+id/action_post_fragment_to_comment_fragment"
+            app:destination="@id/comment_fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/comment_fragment"
+        android:name="com.example.pluribook.ui.comment.CommentFragment"
+        android:label="Comments"
+        tools:layout="@layout/fragment_comment" />
+
 </navigation>

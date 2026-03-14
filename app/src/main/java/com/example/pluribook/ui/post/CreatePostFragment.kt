@@ -25,7 +25,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
     private var selectedImageUri: Uri? = null
     private lateinit var imageView: ImageView
 
-    private val postViewModel: PostViewModel by viewModels()
+    private val createPostViewModel: CreatePostViewModel by viewModels()
     private val pickMediaLauncher = registerForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
@@ -80,10 +80,10 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             btnSave.isEnabled = false
             btnSave.setText(R.string.create_post_save_button_uploading_text)
 
-            postViewModel.createPost(selectedImageUri, description)
+            createPostViewModel.createPost(selectedImageUri, description)
         }
 
-        postViewModel.postState.observe(viewLifecycleOwner) { state ->
+        createPostViewModel.postState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
                     btnSave.isEnabled = false

@@ -11,16 +11,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
-class AuthRepository(
-    private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore,
-    private val storage: FirebaseStorage,
-    private val userDao: UserDao
+class UserRepository(
+    private val userDao: UserDao,
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 ) {
 
     companion object {
         private const val PROFILE_IMAGES_FOLDER = "profile_images"
-        private const val USERS_COLLECTION = "users"
+        const val USERS_COLLECTION = "users"
     }
 
     fun getFirebaseAuth() = auth
@@ -37,8 +37,14 @@ class AuthRepository(
             }
             auth.currentUser?.updateProfile(profileUpdates)?.await()
 
-            val newUser = User(email = email, username = username, photoUrl = downloadUrl, uid = uid)
-            firestore.collection(USERS_COLLECTION).document(uid).set(newUser).await()
+            val newUser = User(
+                uid = uid,
+                email = email,
+                username = username,
+                photoUrl = downloadUrl,
+                likedPosts = emptyList()
+            )
+            firestore.collection("users").document(uid).set(newUser).await()
 
             userDao.saveUser(newUser)
 
@@ -54,17 +60,38 @@ class AuthRepository(
         try {
             val document = firestore.collection(USERS_COLLECTION).document(uid).get().await()
             if (document.exists()) {
+                val likedPosts = (document.get("likedPosts") as? List<*>)
+                    ?.filterIsInstance<String>()
+                    ?: emptyList()
+
                 val user = User(
+                    uid = uid,
                     email = document.getString("email") ?: "",
                     username = document.getString("username") ?: "Unknown",
                     photoUrl = document.getString("photoUrl") ?: "",
-                    uid = uid
+                    likedPosts = likedPosts
                 )
                 userDao.saveUser(user)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error syncing user with uid $uid to local database")
             e.printStackTrace()
+        }
+    }
+
+    suspend fun getUserProfile(uid: String): User? {
+        val localUser = userDao.getUserByUid(uid)
+        if (localUser != null) return localUser
+
+        return try {
+            val document = firestore.collection(USERS_COLLECTION).document(uid).get().await()
+            val remoteUser = document.toObject(User::class.java)
+            if (remoteUser != null) {
+                userDao.saveUser(remoteUser)
+            }
+            remoteUser
+        } catch (e: Exception) {
+            null
         }
     }
 }
