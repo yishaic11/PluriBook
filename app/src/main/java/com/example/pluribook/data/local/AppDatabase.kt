@@ -8,7 +8,7 @@ import com.example.pluribook.data.model.Post
 import com.example.pluribook.data.model.Comment
 
 @TypeConverters(Converters::class)
-@Database(entities = [User::class, Post::class, Comment::class], version = 3, exportSchema = false)
+@Database(entities = [User::class, Post::class, Comment::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun postDao(): PostDao
