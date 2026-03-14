@@ -9,13 +9,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.pluribook.PluribookApplication
 import com.example.pluribook.data.repository.AuthRepository
-import com.example.pluribook.utils.AuthState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import com.example.pluribook.TAG
+import com.example.pluribook.utils.ResourceState
+import com.google.firebase.auth.FirebaseUser
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val userDao = (application as PluribookApplication).database.userDao()
@@ -26,11 +27,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         userDao
     )
 
-    private val _authState = MutableLiveData<AuthState>()
-    val authState: LiveData<AuthState> = _authState
+    private val _authState = MutableLiveData<ResourceState<FirebaseUser?>>()
+    val authState: LiveData<ResourceState<FirebaseUser?>> = _authState
 
     fun login(email: String, password: String) {
-        _authState.value = AuthState.Loading
+        _authState.value = ResourceState.Loading
 
         viewModelScope.launch {
             try {
@@ -39,22 +40,22 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 val user = result.user
 
                 user?.uid?.let { repository.syncUserToLocalDatabase(it) }
-                _authState.value = AuthState.Success(user)
+                _authState.value = ResourceState.Success(user)
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error in login")
-                _authState.value = AuthState.Error(e.message ?: "Login failed")
+                _authState.value = ResourceState.Error(e.message ?: "Login failed")
             }
         }
     }
 
     fun signup(email: String, password: String, username: String, imageUri: Uri?) {
         if (imageUri == null) {
-            _authState.value = AuthState.Error("Please select a profile photo")
+            _authState.value = ResourceState.Error("Please select a profile photo")
             return
         }
 
-        _authState.value = AuthState.Loading
+        _authState.value = ResourceState.Loading
 
         viewModelScope.launch {
             try {
@@ -68,14 +69,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 } ?: false
 
                 if (success) {
-                    _authState.value = AuthState.Success(firebaseUser)
+                    _authState.value = ResourceState.Success(firebaseUser)
                 } else {
-                    _authState.value = AuthState.Error("Failed to save user profile.")
+                    _authState.value = ResourceState.Error("Failed to save user profile.")
                 }
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error in signup")
-                _authState.value = AuthState.Error(e.message ?: "Signup failed")
+                _authState.value = ResourceState.Error(e.message ?: "Signup failed")
             }
         }
     }

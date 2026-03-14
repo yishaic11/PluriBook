@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.pluribook.R
-import com.example.pluribook.utils.AuthState
+import com.example.pluribook.utils.ResourceState
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.imageview.ShapeableImageView
@@ -68,12 +68,12 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
 
         viewModel.authState.observe(viewLifecycleOwner) { state ->
             when (state) {
-                is AuthState.Loading -> {
+                is ResourceState.Loading -> {
                     buttonSignup.isEnabled = false
                     buttonSignup.setText(R.string.loading_creating_account)
                 }
 
-                is AuthState.Success -> {
+                is ResourceState.Success -> {
                     buttonSignup.isEnabled = true
                     buttonSignup.setText(R.string.signup_button)
                     Toast.makeText(
@@ -85,7 +85,7 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
                     findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
                 }
 
-                is AuthState.Error -> {
+                is ResourceState.Error -> {
                     buttonSignup.isEnabled = true
                     buttonSignup.setText(R.string.signup_button)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
