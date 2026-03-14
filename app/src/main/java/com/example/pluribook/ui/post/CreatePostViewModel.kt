@@ -22,9 +22,6 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
     private val userDao = (application as PluribookApplication).database.userDao()
 
     private val repository = PostRepository(
-        FirebaseFirestore.getInstance(),
-        FirebaseStorage.getInstance(),
-        FirebaseAuth.getInstance(),
         postDao,
         userDao
     )

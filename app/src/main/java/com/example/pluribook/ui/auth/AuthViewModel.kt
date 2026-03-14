@@ -20,12 +20,7 @@ import com.google.firebase.auth.FirebaseUser
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val userDao = (application as PluribookApplication).database.userDao()
-    private val repository = UserRepository(
-        FirebaseAuth.getInstance(),
-        FirebaseFirestore.getInstance(),
-        FirebaseStorage.getInstance(),
-        userDao
-    )
+    private val repository = UserRepository(userDao)
 
     private val _authState = MutableLiveData<ResourceState<FirebaseUser?>>()
     val authState: LiveData<ResourceState<FirebaseUser?>> = _authState

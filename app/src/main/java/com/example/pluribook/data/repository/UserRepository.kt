@@ -12,15 +12,15 @@ import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
 class UserRepository(
-    private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore,
-    private val storage: FirebaseStorage,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 ) {
 
     companion object {
         private const val PROFILE_IMAGES_FOLDER = "profile_images"
-        private const val USERS_COLLECTION = "users"
+        const val USERS_COLLECTION = "users"
     }
 
     fun getFirebaseAuth() = auth
