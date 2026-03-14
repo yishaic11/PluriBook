@@ -9,24 +9,25 @@ import androidx.lifecycle.viewModelScope
 import com.example.pluribook.PluribookApplication
 import com.example.pluribook.data.model.Post
 import com.example.pluribook.data.repository.PostRepository
+import com.example.pluribook.data.repository.UserRepository
 import com.example.pluribook.utils.ResourceState
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val postDao = (application as PluribookApplication).database.postDao()
-    private val userDao = (application as PluribookApplication).database.userDao()
-    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-
-    private val repository = PostRepository(
+    private val app = application as PluribookApplication
+    private val postDao = app.database.postDao()
+    private val userDao = app.database.userDao()
+    private val postRepository = PostRepository(
         postDao,
         userDao
     )
+    private val userRepository = UserRepository(userDao)
+
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
     private val _postState = MutableLiveData<ResourceState<Post>>()
     val postState: LiveData<ResourceState<Post>> = _postState
@@ -43,65 +44,51 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPost(postId: String) {
         _postState.value = ResourceState.Loading
         viewModelScope.launch {
-            val fetchedPost = withContext(Dispatchers.IO) {
-                postDao.getPostById(postId)
-            }
-            if (fetchedPost != null) {
-                _postState.value = ResourceState.Success(fetchedPost)
-                _isOwner.value = fetchedPost.senderId == currentUserId
+            try {
+                val fetchedPost = withContext(Dispatchers.IO) {
+                    app.database.postDao().getPostById(postId)
+                }
 
-                fetchSenderProfile(fetchedPost.senderId)
-            } else {
-                _postState.value = ResourceState.Error("Post not found")
-            }
-        }
-    }
+                if (fetchedPost != null) {
+                    _postState.value = ResourceState.Success(fetchedPost)
+                    _isOwner.value = fetchedPost.senderId == currentUserId
 
-    private suspend fun fetchSenderProfile(senderId: String) {
-        try {
-            val firestore = FirebaseFirestore.getInstance()
-            val userDoc = firestore.collection("users").document(senderId).get().await()
+                    val sender = withContext(Dispatchers.IO) {
+                        userRepository.getUserProfile(fetchedPost.senderId)
+                    }
 
-            if (userDoc.exists()) {
-                _senderName.value = userDoc.getString("username") ?: "Unknown User"
-                _senderPhotoUrl.value = userDoc.getString("photoUrl") ?: ""
-            } else {
-                _senderName.value = "Unknown User"
-                _senderPhotoUrl.value = ""
+                    _senderName.value = sender?.username ?: "Unknown User"
+                    _senderPhotoUrl.value = sender?.photoUrl ?: ""
+                } else {
+                    _postState.value = ResourceState.Error("Post not found")
+                }
+            } catch (e: Exception) {
+                _postState.value = ResourceState.Error(e.message ?: "An error occurred")
             }
-        } catch (e: Exception) {
-            Log.e("PostViewModel", "Error fetching sender profile", e)
-            _senderName.value = "Unknown User"
-            _senderPhotoUrl.value = ""
         }
     }
 
     fun toggleLike(postId: String) {
         val uid = currentUserId ?: return
-
         val currentState = _postState.value
-        if (currentState !is ResourceState.Success) return
-        val currentPost = currentState.data
 
-        val isCurrentlyLiked = currentPost.likedBy.contains(uid)
+        if (currentState is ResourceState.Success) {
+            val currentPost = currentState.data
+            val isCurrentlyLiked = currentPost.likedBy.contains(uid)
 
-        val newLikedBy = if (isCurrentlyLiked) {
-            currentPost.likedBy - uid
-        } else {
-            currentPost.likedBy + uid
-        }
-        _postState.value = ResourceState.Success(currentPost.copy(likedBy = newLikedBy))
+            val newLikedBy =
+                if (isCurrentlyLiked) currentPost.likedBy - uid else currentPost.likedBy + uid
+            _postState.value = ResourceState.Success(currentPost.copy(likedBy = newLikedBy))
 
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.toggleLike(postId, uid, isCurrentlyLiked)
+            viewModelScope.launch(Dispatchers.IO) {
+                postRepository.toggleLike(postId, uid, isCurrentlyLiked)
+            }
         }
     }
 
     fun deletePost(postId: String) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                repository.deletePost(postId)
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            postRepository.deletePost(postId)
         }
     }
 }

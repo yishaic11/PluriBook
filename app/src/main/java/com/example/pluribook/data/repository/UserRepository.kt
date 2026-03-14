@@ -78,4 +78,20 @@ class UserRepository(
             e.printStackTrace()
         }
     }
+
+    suspend fun getUserProfile(uid: String): User? {
+        val localUser = userDao.getUserByUid(uid)
+        if (localUser != null) return localUser
+
+        return try {
+            val document = firestore.collection(USERS_COLLECTION).document(uid).get().await()
+            val remoteUser = document.toObject(User::class.java)
+            if (remoteUser != null) {
+                userDao.saveUser(remoteUser)
+            }
+            remoteUser
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

@@ -121,7 +121,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/image_post_photo"
-                tools:text="This is the main text content of the post..." />
+                tools:text="@string/post_desc_placeholder" />
 
             <ImageButton
                 android:id="@+id/button_like"
