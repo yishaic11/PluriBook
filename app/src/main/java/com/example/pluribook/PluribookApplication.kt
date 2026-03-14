@@ -13,7 +13,6 @@ class PluribookApplication : Application() {
             this,
             AppDatabase::class.java,
             "pluribook_database"
-        ).fallbackToDestructiveMigration()
-            .build()
+        ).fallbackToDestructiveMigration().build()
     }
 }

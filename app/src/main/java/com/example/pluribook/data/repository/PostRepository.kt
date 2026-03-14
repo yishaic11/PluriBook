@@ -3,19 +3,21 @@ package com.example.pluribook.data.repository
 import android.net.Uri
 import android.util.Log
 import com.example.pluribook.TAG
-import com.example.pluribook.data.local.PostsDao
+import com.example.pluribook.data.local.PostDao
 import com.example.pluribook.data.model.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
-class PostsRepository(
+class PostRepository(
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage,
     private val auth: FirebaseAuth,
-    private val postsDao: PostsDao
+    private val postDao: PostDao
 ) {
 
     companion object {
@@ -40,9 +42,7 @@ class PostsRepository(
             )
 
             firestore.collection(POSTS_COLLECTION).document(postId).set(newPost).await()
-
-            postsDao.insertPost(newPost)
-
+            postDao.insertPost(newPost)
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error creating post")
@@ -51,11 +51,26 @@ class PostsRepository(
         }
     }
 
-    suspend fun getAllPosts() {}
-
     suspend fun getPostsBySender() {}
 
     suspend fun updatePost() {}
 
-    suspend fun deletePost() {}
+    suspend fun deletePost(postId: String): Boolean {
+        return try {
+            try {
+                storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg").delete().await()
+            } catch (e: Exception) {
+                Log.w(TAG, "Image not found or already deleted: ${e.message}")
+            }
+
+            firestore.collection(POSTS_COLLECTION).document(postId).delete().await()
+
+            postDao.deletePost(postId)
+
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting post: ${e.message}", e)
+            false
+        }
+    }
 }
