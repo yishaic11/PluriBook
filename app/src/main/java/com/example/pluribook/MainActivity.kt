@@ -8,8 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
 import com.example.pluribook.data.model.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, 0, systemBars.right, 0)
             insets
         }
 
@@ -35,11 +35,8 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        bottomNavigationView.setupWithNavController(navController)
-
         val navInflater = navController.navInflater
         val navGraph = navInflater.inflate(R.navigation.nav_graph)
-
         val currentUser = FirebaseAuth.getInstance().currentUser
 
         if (currentUser != null) {
@@ -50,11 +47,41 @@ class MainActivity : AppCompatActivity() {
         }
         navController.graph = navGraph
 
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            val options = NavOptions.Builder()
+                .setLaunchSingleTop(true)
+                .setRestoreState(false)
+                .setPopUpTo(
+                    destinationId = navController.graph.startDestinationId,
+                    inclusive = false,
+                    saveState = false
+                )
+                .build()
+
+            navController.navigate(item.itemId, null, options)
+            true
+        }
+
+        bottomNavigationView.setOnItemReselectedListener { item ->
+            navController.popBackStack(item.itemId, false)
+        }
+
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.login_fragment || destination.id == R.id.signup_fragment) {
-                bottomNavigationView.visibility = View.GONE
-            } else {
-                bottomNavigationView.visibility = View.VISIBLE
+            when (destination.id) {
+                R.id.login_fragment, R.id.signup_fragment -> {
+                    bottomNavigationView.visibility = View.GONE
+                }
+
+                else -> {
+                    bottomNavigationView.visibility = View.VISIBLE
+                }
+            }
+
+            if (destination.id == R.id.home_fragment ||
+                destination.id == R.id.create_post_fragment ||
+                destination.id == R.id.profile_fragment
+            ) {
+                bottomNavigationView.menu.findItem(destination.id)?.isChecked = true
             }
         }
     }
@@ -68,11 +95,16 @@ class MainActivity : AppCompatActivity() {
                 val document = db.collection("users").document(uid).get().await()
 
                 if (document.exists()) {
+                    val likedPosts = (document.get("likedPosts") as? List<*>)
+                        ?.filterIsInstance<String>()
+                        ?: emptyList()
+
                     val updatedUser = User(
                         uid = uid,
                         email = document.getString("email") ?: "",
                         username = document.getString("username") ?: "Unknown",
-                        photoUrl = document.getString("photoUrl") ?: ""
+                        photoUrl = document.getString("photoUrl") ?: "",
+                        likedPosts = likedPosts
                     )
 
                     userDao.saveUser(updatedUser)

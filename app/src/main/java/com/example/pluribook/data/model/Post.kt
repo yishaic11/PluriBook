@@ -11,5 +11,8 @@ data class Post(
     val photoUrl: String,
     val description: String,
     val senderId: String,
-    val createdAt: Long = System.currentTimeMillis()
-)
+    val createdAt: Long = System.currentTimeMillis(),
+    val likedBy: List<String> = emptyList()
+) {
+    constructor () : this("", "", "", "", 0L, emptyList())
+}

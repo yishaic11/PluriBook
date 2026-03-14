@@ -14,6 +14,7 @@ navigation = "2.7.7"
 firebaseStorage = "21.0.1"
 picasso = "2.8"
 room = "2.6.1"
+swipeRefresh = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -31,6 +32,7 @@ picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "pic
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swipeRefresh" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

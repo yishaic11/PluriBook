@@ -60,4 +60,7 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation(libs.firebase.storage)
     implementation(libs.picasso)
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation("androidx.paging:paging-runtime-ktx:3.3.0")
+    implementation("androidx.room:room-paging:2.6.1")
 }
