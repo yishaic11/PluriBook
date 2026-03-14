@@ -7,17 +7,18 @@ import com.example.pluribook.data.local.PostDao
 import com.example.pluribook.data.model.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
+import com.example.pluribook.data.local.UserDao
+import com.google.firebase.firestore.FieldValue
 
 class PostRepository(
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage,
     private val auth: FirebaseAuth,
-    private val postDao: PostDao
+    private val postDao: PostDao,
+    private val userDao: UserDao
 ) {
 
     companion object {
@@ -54,6 +55,34 @@ class PostRepository(
     suspend fun getPostsBySender() {}
 
     suspend fun updatePost() {}
+
+    suspend fun toggleLike(postId: String, currentUserId: String, isCurrentlyLiked: Boolean) {
+        val post = postDao.getPostById(postId)
+        val user = userDao.getUserByUid(currentUserId)
+
+        if (post != null) {
+            val newLikedBy =
+                if (isCurrentlyLiked) post.likedBy - currentUserId else post.likedBy + currentUserId
+            postDao.insertPost(post.copy(likedBy = newLikedBy))
+        }
+
+        if (user != null) {
+            val newUserLikes =
+                if (isCurrentlyLiked) user.likedPosts - postId else user.likedPosts + postId
+            userDao.saveUser(user.copy(likedPosts = newUserLikes))
+        }
+
+        val postRef = firestore.collection("posts").document(postId)
+        val userRef = firestore.collection("users").document(currentUserId)
+
+        if (isCurrentlyLiked) {
+            postRef.update("likedBy", FieldValue.arrayRemove(currentUserId))
+            userRef.update("likedPosts", FieldValue.arrayRemove(postId))
+        } else {
+            postRef.update("likedBy", FieldValue.arrayUnion(currentUserId))
+            userRef.update("likedPosts", FieldValue.arrayUnion(postId))
+        }
+    }
 
     suspend fun deletePost(postId: String): Boolean {
         return try {
