@@ -8,6 +8,7 @@
     <string name="nav_user_profile">User Profile</string>
     <string name="nav_login">Login</string>
     <string name="nav_signup">Sign Up</string>
+    <string name="nav_post">Post</string>
     <!-- Login & Signup -->
     <string name="login_title">Sign in to your account</string>
     <string name="email_hint">Email</string>
@@ -21,6 +22,7 @@
     <string name="signup_move_to_login">"Already have an account? "</string>
     <string name="loading_creating_account">Creating account…</string>
     <string name="loading_logging_in">Logging in…</string>
+    <string name="logout">Logout</string>
     <!-- Create Post-->
     <string name="create_post_description_hint">Tell us about the book…</string>
     <string name="create_post_save_button_text">Save</string>
@@ -33,4 +35,23 @@
     <string name="create_post_missing_input_toast_text">Please add a photo and a description</string>
     <string name="create_post_camera_error_toast_text">Failed to capture photo</string>
     <string name="create_post_no_media_selected_toast_text">No media selected</string>
+    <!-- Post -->
+    <string name="post_image_desc">Post image</string>
+    <string name="post_stub">Full Post View</string>
+    <string name="post_back_desc">Back</string>
+    <string name="post_bottom_options_edit">Edit Post</string>
+    <string name="post_bottom_options_delete">Delete Post</string>
+    <string name="post_add_comment_hint">"Add a Comment..."</string>
+    <string name="post_likes_count_stub">52 likes</string>
+    <string name="post_view_comments_stub">View all 56 comments</string>
+    <string name="post_options_desc">Options (Edit or Delete)</string>
+    <string name="post_auth_photo_desc">Profile Photo</string>
+    <string name="post_like_desc">Like</string>
+    <string name="post_comment_desc">Comment</string>
+    <plurals name="likes_plural">
+        <item quantity="one">%1$d like</item>
+        <item quantity="other">%1$d likes</item>
+    </plurals>
+    <!-- Comment -->
+    <string name="comment_stub">Comments Area Stub</string>
 </resources>
