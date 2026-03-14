@@ -1,6 +1,7 @@
 package com.example.pluribook
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -77,6 +78,7 @@ class MainActivity : AppCompatActivity() {
                     userDao.saveUser(updatedUser)
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error syncing current user  with $uid to local database")
                 e.printStackTrace()
             }
         }
