@@ -12,7 +12,6 @@ import com.example.pluribook.data.repository.PostRepository
 import com.example.pluribook.utils.ResourceState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -35,11 +34,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _isOwner = MutableLiveData<Boolean>()
     val isOwner: LiveData<Boolean> = _isOwner
 
-    private val _authorName = MutableLiveData<String>()
-    val authorName: LiveData<String> = _authorName
+    private val _senderName = MutableLiveData<String>()
+    val senderName: LiveData<String> = _senderName
 
-    private val _authorPhotoUrl = MutableLiveData<String>()
-    val authorPhotoUrl: LiveData<String> = _authorPhotoUrl
+    private val _senderPhotoUrl = MutableLiveData<String>()
+    val senderPhotoUrl: LiveData<String> = _senderPhotoUrl
 
     fun loadPost(postId: String) {
         _postState.value = ResourceState.Loading
@@ -51,29 +50,29 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _postState.value = ResourceState.Success(fetchedPost)
                 _isOwner.value = fetchedPost.senderId == currentUserId
 
-                fetchAuthorProfile(fetchedPost.senderId)
+                fetchSenderProfile(fetchedPost.senderId)
             } else {
                 _postState.value = ResourceState.Error("Post not found")
             }
         }
     }
 
-    private suspend fun fetchAuthorProfile(senderId: String) {
+    private suspend fun fetchSenderProfile(senderId: String) {
         try {
             val firestore = FirebaseFirestore.getInstance()
             val userDoc = firestore.collection("users").document(senderId).get().await()
 
             if (userDoc.exists()) {
-                _authorName.value = userDoc.getString("username") ?: "Unknown User"
-                _authorPhotoUrl.value = userDoc.getString("photoUrl") ?: ""
+                _senderName.value = userDoc.getString("username") ?: "Unknown User"
+                _senderPhotoUrl.value = userDoc.getString("photoUrl") ?: ""
             } else {
-                _authorName.value = "Unknown User"
-                _authorPhotoUrl.value = ""
+                _senderName.value = "Unknown User"
+                _senderPhotoUrl.value = ""
             }
         } catch (e: Exception) {
-            Log.e("PostViewModel", "Error fetching author profile", e)
-            _authorName.value = "Unknown User"
-            _authorPhotoUrl.value = ""
+            Log.e("PostViewModel", "Error fetching sender profile", e)
+            _senderName.value = "Unknown User"
+            _senderPhotoUrl.value = ""
         }
     }
 
