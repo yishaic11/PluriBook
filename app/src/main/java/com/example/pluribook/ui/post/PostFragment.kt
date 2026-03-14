@@ -40,9 +40,9 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         val textLikesCount = view.findViewById<TextView>(R.id.text_likes_count)
         val textViewAllComments = view.findViewById<TextView>(R.id.text_view_comments)
 
-        val textAuthorName = view.findViewById<TextView>(R.id.text_post_author_name)
-        val imageAuthorProfile =
-            view.findViewById<ShapeableImageView>(R.id.image_post_author_profile)
+        val textSenderName = view.findViewById<TextView>(R.id.text_post_sender_name)
+        val imageSenderProfile =
+            view.findViewById<ShapeableImageView>(R.id.image_post_sender_profile)
 
         val postId = arguments?.getString("postId")
         if (postId != null) {
@@ -52,7 +52,7 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         buttonBack.setOnClickListener { findNavController().navigateUp() }
 
         viewModel.authorName.observe(viewLifecycleOwner) { name ->
-            textAuthorName.text = name
+            textSenderName.text = name
         }
 
         viewModel.authorPhotoUrl.observe(viewLifecycleOwner) { photoUrl ->
@@ -63,9 +63,9 @@ class PostFragment : Fragment(R.layout.fragment_post) {
                     .error(R.drawable.default_profile_photo)
                     .fit()
                     .centerCrop()
-                    .into(imageAuthorProfile)
+                    .into(imageSenderProfile)
             } else {
-                imageAuthorProfile.setImageResource(R.drawable.default_profile_photo)
+                imageSenderProfile.setImageResource(R.drawable.default_profile_photo)
             }
         }
 

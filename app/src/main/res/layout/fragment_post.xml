@@ -54,7 +54,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/image_post_author_profile"
+                android:id="@+id/image_post_sender_profile"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:layout_marginStart="16dp"
@@ -67,17 +67,17 @@
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent" />
 
             <TextView
-                android:id="@+id/text_post_author_name"
+                android:id="@+id/text_post_sender_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:textColor="@color/pluri_darkest"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@+id/image_post_author_profile"
-                app:layout_constraintStart_toEndOf="@+id/image_post_author_profile"
-                app:layout_constraintTop_toTopOf="@+id/image_post_author_profile"
-                tools:text="Israel Israeli" />
+                app:layout_constraintBottom_toBottomOf="@+id/image_post_sender_profile"
+                app:layout_constraintStart_toEndOf="@+id/image_post_sender_profile"
+                app:layout_constraintTop_toTopOf="@+id/image_post_sender_profile"
+                tools:text="@string/post_username_placeholder" />
 
             <ImageButton
                 android:id="@+id/button_post_options"
@@ -88,9 +88,9 @@
                 android:contentDescription="@string/post_options_desc"
                 android:src="@drawable/ic_more_vert"
                 android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@+id/image_post_author_profile"
+                app:layout_constraintBottom_toBottomOf="@+id/image_post_sender_profile"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/image_post_author_profile"
+                app:layout_constraintTop_toTopOf="@+id/image_post_sender_profile"
                 app:tint="@color/pluri_darkest"
                 tools:visibility="visible" />
 
@@ -108,7 +108,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_max="400dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/image_post_author_profile" />
+                app:layout_constraintTop_toBottomOf="@+id/image_post_sender_profile" />
 
             <TextView
                 android:id="@+id/text_post_description"
