@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.pluribook.data.local.AppDatabase
 
 const val TAG = "PluribookApplication"
+
 class PluribookApplication : Application() {
 
     val database: AppDatabase by lazy {
@@ -12,6 +13,7 @@ class PluribookApplication : Application() {
             this,
             AppDatabase::class.java,
             "pluribook_database"
-        ).build()
+        ).fallbackToDestructiveMigration()
+            .build()
     }
 }
