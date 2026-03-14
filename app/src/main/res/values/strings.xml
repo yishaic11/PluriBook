@@ -53,6 +53,7 @@
         <item quantity="other">%1$d likes</item>
     </plurals>
     <string name="post_username_placeholder">Israel Israeli</string>
+    <string name="post_desc_placeholder">This is the main text content of the post...</string>
     <!-- Comment -->
     <string name="comment_stub">Comments Area Stub</string>
 </resources>
