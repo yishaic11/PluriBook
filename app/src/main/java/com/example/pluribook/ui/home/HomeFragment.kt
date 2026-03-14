@@ -49,13 +49,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         homeAdapter = HomeAdapter(
             onImageLoaded = {
                 loadedCount++
-                if (loadedCount >= homeAdapter.itemCount && homeAdapter.itemCount > 0) {
+                if (loadedCount >= 6 || loadedCount >= homeAdapter.itemCount) {
                     centralProgress.visibility = View.GONE
                 }
             },
             onPostClick = { clickedPost ->
                 viewModel.savePostToLocal(clickedPost)
-
                 val bundle = Bundle().apply { putString("postId", clickedPost.id) }
                 findNavController().navigate(R.id.action_home_fragment_to_post_fragment, bundle)
             }
@@ -64,7 +63,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setFragmentResultListener("post_request") { _, bundle ->
             val postWasDeleted = bundle.getBoolean("post_deleted", false)
             if (postWasDeleted) {
-                homeAdapter.refresh()
+                viewModel.refreshPosts()
             }
         }
 
@@ -81,20 +80,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         homeAdapter.addLoadStateListener { loadState ->
-            val isLoading = loadState.source.refresh is LoadState.Loading
+            val isInitialLoading = loadState.source.refresh is LoadState.Loading
             val isListEmpty = homeAdapter.itemCount == 0
 
-            swipeRefresh.isRefreshing = isLoading && !isListEmpty
+            centralProgress.visibility =
+                if (isInitialLoading && isListEmpty) View.VISIBLE else View.GONE
+            swipeRefresh.isRefreshing = isInitialLoading && !isListEmpty
 
-            if (isLoading && isListEmpty) {
-                centralProgress.visibility = View.VISIBLE
-            } else if (!isLoading && isListEmpty) {
-                centralProgress.visibility = View.GONE
+
+            if (loadState.source.append.endOfPaginationReached && !isListEmpty) {
+                viewModel.loadMorePosts()
             }
         }
 
         swipeRefresh.setOnRefreshListener {
-            homeAdapter.refresh()
+            viewModel.refreshPosts()
         }
     }
 }

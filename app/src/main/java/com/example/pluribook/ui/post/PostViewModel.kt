@@ -25,9 +25,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
     private val repository = PostRepository(
-        FirebaseFirestore.getInstance(),
-        FirebaseStorage.getInstance(),
-        FirebaseAuth.getInstance(),
         postDao,
         userDao
     )

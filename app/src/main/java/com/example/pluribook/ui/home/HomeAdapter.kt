@@ -60,6 +60,7 @@ class HomeAdapter(
         override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean =
             oldItem.id == newItem.id
 
-        override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean = oldItem == newItem
+        override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean =
+            oldItem == newItem
     }
 }
