@@ -52,6 +52,7 @@
         <item quantity="one">%1$d like</item>
         <item quantity="other">%1$d likes</item>
     </plurals>
+    <string name="post_username_placeholder">Israel Israeli</string>
     <!-- Comment -->
     <string name="comment_stub">Comments Area Stub</string>
 </resources>
