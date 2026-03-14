@@ -12,11 +12,20 @@ interface PostsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPost(post: Post)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(posts: List<Post>)
-
     @Query("SELECT * FROM posts ORDER BY createdAt DESC") // Get newest posts first
     suspend fun getAllPosts(): List<Post>
+
+    @Query("SELECT * FROM posts WHERE senderId = :id")
+    suspend fun getPostsBySenderId(id: String): List<Post>
+
+    @Query("""
+        UPDATE posts 
+        SET 
+            description = COALESCE(:description, description),
+            photoUrl = COALESCE(:photoUrl, photoUrl)
+        WHERE id = :postId
+    """)
+    suspend fun updatePost(postId: String, description: String?, photoUrl: String?)
 
     @Query("DELETE FROM posts WHERE id = :postId")
     suspend fun deletePost(postId: String)

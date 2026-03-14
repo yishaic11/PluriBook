@@ -1,4 +1,4 @@
-package com.example.pluribook.ui.posts
+package com.example.pluribook.ui.post
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.pluribook.R
-import com.example.pluribook.ui.post.PostViewModel
 import com.example.pluribook.utils.ResourceState
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -34,7 +33,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             selectedImageUri = uri
             displaySelectedImage(uri)
         } else {
-            Toast.makeText(requireContext(), "No media selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.create_post_no_media_selected_toast_text, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -46,7 +45,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             selectedImageUri = uri
             displaySelectedImage(uri)
         } else {
-            Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.create_post_camera_error_toast_text, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -60,7 +59,6 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
         val btnSave = view.findViewById<MaterialButton>(R.id.btn_save)
         val btnCancel = view.findViewById<MaterialButton>(R.id.btn_cancel)
 
-        // When the card is clicked, show the choice dialog
         imageCard.setOnClickListener {
             showImageSourceDialog()
         }
@@ -74,13 +72,13 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
             if (selectedImageUri == null || description.isBlank()) {
                 Toast.makeText(
-                    requireContext(), "Please add a photo and a description", Toast.LENGTH_SHORT
+                    requireContext(), R.string.create_post_missing_input_toast_text, Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
 
             btnSave.isEnabled = false
-            btnSave.text = "Uploading..."
+            btnSave.setText(R.string.create_post_save_button_uploading_text)
 
             postViewModel.createPost(selectedImageUri, description)
         }
@@ -89,16 +87,16 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
             when (state) {
                 is ResourceState.Loading -> {
                     btnSave.isEnabled = false
-                    btnSave.text = "Publishing..."
+                    btnSave.setText(R.string.create_post_save_button_loading_text)
                 }
                 is ResourceState.Success -> {
                     btnSave.isEnabled = true
-                    Toast.makeText(requireContext(), "Post published!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.create_post_success_toast_text, Toast.LENGTH_SHORT).show()
                     findNavController().navigate(R.id.home_fragment)
                 }
                 is ResourceState.Error -> {
                     btnSave.isEnabled = true
-                    btnSave.text = "Save"
+                    btnSave.setText(R.string.create_post_save_button_error_text)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
             }
