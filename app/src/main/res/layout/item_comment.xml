@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image_comment_profile"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent"
+        tools:src="@drawable/default_profile_photo" />
+
+    <TextView
+        android:id="@+id/text_view_comment_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:textColor="@color/pluri_darkest"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/image_comment_profile"
+        app:layout_constraintTop_toTopOf="@+id/image_comment_profile"
+        tools:text="@string/comment_username_placeholder" />
+
+    <TextView
+        android:id="@+id/text_view_comment_body"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/pluri_darkest"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@+id/image_button_comment_options"
+        app:layout_constraintStart_toStartOf="@+id/text_view_comment_username"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_comment_username"
+        tools:text="@string/comment_text_placeholder" />
+
+    <ImageButton
+        android:id="@+id/image_button_comment_options"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/comment_options_desc"
+        android:src="@drawable/ic_more_vert"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/image_comment_profile"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/image_comment_profile"
+        app:tint="@color/pluri_medium"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

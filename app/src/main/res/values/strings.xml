@@ -55,5 +55,9 @@
     <string name="post_username_placeholder">Israel Israeli</string>
     <string name="post_desc_placeholder">This is the main text content of the post...</string>
     <!-- Comment -->
-    <string name="comment_stub">Comments Area Stub</string>
+    <string name="comments_title">Comments</string>
+    <string name="comment_options_desc">Options (Delete)</string>
+    <string name="comment_text_placeholder">This is an amazing book review!</string>
+    <string name="comment_username_placeholder">Israel Israeli</string>
+    <string name="comment_back_desc">Back</string>
 </resources>

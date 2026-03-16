@@ -29,7 +29,7 @@ class PostRepository(
 
     companion object {
         private const val POST_IMAGES_FOLDER = "post_images"
-        private const val POSTS_COLLECTION = "posts"
+        const val POSTS_COLLECTION = "posts"
         private const val PAGE_SIZE = 10
     }
 
