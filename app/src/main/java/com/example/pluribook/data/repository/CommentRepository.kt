@@ -1,8 +1,10 @@
 package com.example.pluribook.data.repository
 
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.example.pluribook.TAG
 import com.example.pluribook.data.local.CommentDao
 import com.example.pluribook.data.model.Comment
 import com.google.firebase.firestore.FirebaseFirestore
@@ -29,6 +31,7 @@ class CommentRepository(
             val comments = snapshot.toObjects(Comment::class.java)
             commentDao.insertComments(comments)
         } catch (e: Exception) {
+            Log.e(TAG, "Error fetching comments from Firebase", e)
             e.printStackTrace()
         }
     }
@@ -39,6 +42,8 @@ class CommentRepository(
             commentDao.insertComment(comment)
             true
         } catch (e: Exception) {
+            Log.e(TAG, "Error creating comment: ${e.message}", e)
+            e.printStackTrace()
             false
         }
     }
@@ -48,6 +53,7 @@ class CommentRepository(
             getCommentsRef(postId).document(commentId).delete().await()
             commentDao.deleteComment(commentId)
         } catch (e: Exception) {
+            Log.e(TAG, "Error deleting comment: ${e.message}", e)
             e.printStackTrace()
         }
     }
