@@ -15,12 +15,19 @@ class CommentRepository(
     private val commentDao: CommentDao,
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
+
+    companion object {
+        private const val COMMENTS_COLLECTION = "posts"
+        private const val PAGE_SIZE = 10
+    }
+
     private fun getCommentsRef(postId: String) =
-        firestore.collection("posts").document(postId).collection("comments")
+        firestore.collection(PostRepository.POSTS_COLLECTION).document(postId)
+            .collection(COMMENTS_COLLECTION)
 
     fun getCommentStream(postId: String): Flow<PagingData<Comment>> {
         return Pager(
-            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+            config = PagingConfig(pageSize = PAGE_SIZE, enablePlaceholders = false),
             pagingSourceFactory = { commentDao.getPagedComments(postId) }
         ).flow
     }
