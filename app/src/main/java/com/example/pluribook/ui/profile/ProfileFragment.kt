@@ -22,10 +22,13 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private lateinit var adapter: ProfilePostAdapter
 
     private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-    private var targetProfileId: String = currentUserId
+    private lateinit var targetProfileId: String
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val passedUserId = arguments?.getString("targetUserId")
+        targetProfileId = passedUserId ?: currentUserId
 
         val textUsername = view.findViewById<TextView>(R.id.text_username)
         val imageProfile =
@@ -100,7 +103,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         profileViewModel.profilePostsState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
-                    // Handled implicitly or you can show a ProgressBar
                     // TODO: Loading spinner
                 }
 
