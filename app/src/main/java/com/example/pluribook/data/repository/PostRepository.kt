@@ -9,6 +9,7 @@ import com.example.pluribook.TAG
 import com.example.pluribook.data.local.PostDao
 import com.example.pluribook.data.local.UserDao
 import com.example.pluribook.data.model.Post
+import com.example.pluribook.data.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -95,7 +96,9 @@ class PostRepository(
             )
 
             firestore.collection(POSTS_COLLECTION).document(postId).set(newPost).await()
+
             postDao.insertPost(newPost)
+
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error creating post")
@@ -104,7 +107,59 @@ class PostRepository(
         }
     }
 
-    suspend fun getPostsBySender() {}
+    suspend fun getPostsBySender(senderId: String): List<Post> {
+        return try {
+            val documents = firestore.collection(POSTS_COLLECTION)
+                .whereEqualTo("senderId", senderId)
+                .get()
+                .await()
+
+            val posts = documents.toObjects(Post::class.java)
+
+            if (posts.isNotEmpty()) {
+                postDao.insertPosts(posts)
+            }
+
+            postDao.getPostsBySenderId(senderId)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching user posts for $senderId, falling back to local storage", e)
+
+            postDao.getPostsBySenderId(senderId)
+        }
+    }
+
+    suspend fun getLikedPosts(userId: String): List<Post> {
+        return try {
+            val userDocument =
+                firestore.collection(UserRepository.USERS_COLLECTION).document(userId).get().await()
+            val user = userDocument.toObject(User::class.java)
+            val likedPostIds = user?.likedPosts ?: emptyList()
+
+            if (likedPostIds.isEmpty()) return emptyList()
+
+            val allFetchedPosts = mutableListOf<Post>()
+
+            likedPostIds.chunked(10).forEach { chunk ->
+                val snapshot = firestore.collection(POSTS_COLLECTION)
+                    .whereIn("id", chunk)
+                    .get().await()
+                allFetchedPosts.addAll(snapshot.toObjects(Post::class.java))
+            }
+
+            postDao.insertPosts(allFetchedPosts)
+            if (user != null) userDao.saveUser(user)
+
+            postDao.getPostsByIds(likedPostIds)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching liked posts, falling back to local storage", e)
+
+            val localUser = userDao.getUserByUid(userId)
+            val localIds = localUser?.likedPosts ?: emptyList()
+            if (localIds.isEmpty()) emptyList() else postDao.getPostsByIds(localIds)
+        }
+    }
 
     suspend fun updatePost() {}
 
@@ -145,6 +200,7 @@ class PostRepository(
             }
             firestore.collection(POSTS_COLLECTION).document(postId).delete().await()
             postDao.deletePost(postId)
+
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error deleting post: ${e.message}", e)

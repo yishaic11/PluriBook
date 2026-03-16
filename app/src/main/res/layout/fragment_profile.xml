@@ -1,20 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/pluri_light">
 
+    <ImageView
+        android:id="@+id/image_logo"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/pluribook_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image_profile_picture"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/create_post_nav_icon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/image_logo"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+        app:strokeWidth="1.5dp" />
+
     <TextView
+        android:id="@+id/text_username"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/pluri_darkest"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/image_profile_picture"
+        app:layout_constraintEnd_toStartOf="@id/btn_edit_profile"
+        app:layout_constraintStart_toEndOf="@id/image_profile_picture"
+        app:layout_constraintTop_toTopOf="@id/image_profile_picture"
+        tools:text="Username" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_edit_profile"
+        style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        app:icon="@android:drawable/ic_menu_edit"
+        app:iconTint="@color/pluri_dark"
+        app:layout_constraintBottom_toBottomOf="@id/image_profile_picture"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/image_profile_picture" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout_profile"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/nav_user_profile"
-        android:textColor="@color/pluri_darkest"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:background="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/image_profile_picture"
+        app:tabGravity="fill"
+        app:tabMaxWidth="0dp"
+        app:tabIconTint="@color/pluri_dark"
+        app:tabIndicatorColor="@color/pluri_dark"
+        app:tabIndicatorHeight="3dp">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:icon="@android:drawable/ic_dialog_dialer" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:icon="@drawable/ic_heart_filled" />
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_posts"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tab_layout_profile"
+        app:layout_goneMarginTop="24dp"
+        app:spanCount="3"
+        tools:listitem="@layout/item_post_grid" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

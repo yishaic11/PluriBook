@@ -22,6 +22,9 @@ interface PostDao {
     @Query("SELECT * FROM posts WHERE senderId = :id")
     suspend fun getPostsBySenderId(id: String): List<Post>
 
+    @Query("SELECT * FROM posts WHERE id IN (:postIds) ORDER BY createdAt DESC")
+    suspend fun getPostsByIds(postIds: List<String>): List<Post>
+
     @Query(
         """
         UPDATE posts 

@@ -138,6 +138,16 @@ class PostFragment : Fragment(R.layout.fragment_post) {
                     val count = post.likedBy.size
                     textLikesCount.text =
                         resources.getQuantityString(R.plurals.likes_plural, count, count)
+
+                    val navigateToProfile = View.OnClickListener {
+                        val bundle = Bundle().apply {
+                            putString("targetUserId", post.senderId)
+                        }
+                        findNavController().navigate(R.id.profile_fragment, bundle)
+                    }
+
+                    textSenderName.setOnClickListener(navigateToProfile)
+                    imageSenderProfile.setOnClickListener(navigateToProfile)
                 }
 
                 is ResourceState.Error -> {
