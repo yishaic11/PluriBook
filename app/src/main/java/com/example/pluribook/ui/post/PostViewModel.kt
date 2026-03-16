@@ -57,14 +57,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _postState.value = ResourceState.Success(fetchedPost)
                 _isOwner.value = fetchedPost.senderId == currentUserId
 
-                fetchAuthorProfile(fetchedPost.senderId)
+                fetchSenderProfile(fetchedPost.senderId)
             } else {
                 _postState.value = ResourceState.Error("Post not found")
             }
         }
     }
 
-    private suspend fun fetchAuthorProfile(senderId: String) {
+    private suspend fun fetchSenderProfile(senderId: String) {
         try {
             val localUser = withContext(Dispatchers.IO) { userDao.getUserByUid(senderId) }
             if (localUser != null && localUser.username != "Unknown") {
