@@ -24,7 +24,7 @@
     <string name="loading_logging_in">Logging in…</string>
     <string name="logout">Logout</string>
     <!-- Create Post-->
-    <string name="create_post_description_hint">Tell us about the book…</string>
+    <string name="create_post_description_hint">Tell us what you thought of the book…</string>
     <string name="create_post_save_button_text">Save</string>
     <string name="create_post_cancel_button_text">Cancel</string>
     <string name="create_post_image_view_content_desc">Upload an image for your post</string>
@@ -35,6 +35,7 @@
     <string name="create_post_missing_input_toast_text">Please add a photo and a description</string>
     <string name="create_post_camera_error_toast_text">Failed to capture photo</string>
     <string name="create_post_no_media_selected_toast_text">No media selected</string>
+    <string name="create_post_book_search_hint">Search for a Book...</string>
     <!-- Post -->
     <string name="post_image_desc">Post image</string>
     <string name="post_stub">Full Post View</string>
@@ -54,6 +55,9 @@
     </plurals>
     <string name="post_username_placeholder">Israel Israeli</string>
     <string name="post_desc_placeholder">This is the main text content of the post...</string>
+    <string name="post_book_author_format">By %1$s</string>
+    <string name="post_book_rating_format">Rating: %1$.1f</string>
+    <string name="post_book_summary">A young boy discovers he is a wizard...</string>
     <!-- Comment -->
     <string name="comments_title">Comments</string>
     <string name="comment_options_desc">Options (Delete)</string>

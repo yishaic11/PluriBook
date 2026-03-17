@@ -51,6 +51,11 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         val inputLayoutAddComment = view.findViewById<TextInputLayout>(R.id.text_input_add_comment)
         val editTextAddComment = view.findViewById<TextInputEditText>(R.id.edit_text_add_comment)
 
+        val textBookTitle = view.findViewById<TextView>(R.id.text_book_title)
+        val textBookAuthor = view.findViewById<TextView>(R.id.text_book_author)
+        val textBookRating = view.findViewById<TextView>(R.id.text_book_rating)
+        val textBookSummary = view.findViewById<TextView>(R.id.text_book_summary)
+        val scrollSummary = view.findViewById<View>(R.id.scroll_book_summary)
 
         val postId = arguments?.getString("postId")
         if (postId != null) {
@@ -138,6 +143,28 @@ class PostFragment : Fragment(R.layout.fragment_post) {
                     val count = post.likedBy.size
                     textLikesCount.text =
                         resources.getQuantityString(R.plurals.likes_plural, count, count)
+
+                    textBookTitle.text = post.bookTitle
+
+                    if (post.bookAuthor.isEmpty()) textBookAuthor.visibility = View.GONE
+                    else {
+                        textBookAuthor.visibility = View.VISIBLE
+                        textBookAuthor.text =
+                            getString(R.string.post_book_author_format, post.bookAuthor)
+                    }
+
+                    if (post.bookRating == 0.0) textBookRating.visibility = View.GONE
+                    else {
+                        textBookRating.visibility = View.VISIBLE
+                        textBookRating.text =
+                            getString(R.string.post_book_rating_format, post.bookRating)
+                    }
+
+                    if (post.bookSummary.isEmpty()) scrollSummary.visibility = View.GONE
+                    else {
+                        scrollSummary.visibility = View.VISIBLE
+                        textBookSummary.text = post.bookSummary
+                    }
                 }
 
                 is ResourceState.Error -> {
