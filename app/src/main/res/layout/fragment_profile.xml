@@ -57,7 +57,7 @@
         app:layout_constraintEnd_toStartOf="@id/btn_edit_profile"
         app:layout_constraintStart_toEndOf="@id/image_profile_picture"
         app:layout_constraintTop_toTopOf="@id/image_profile_picture"
-        tools:text="Username" />
+        tools:text="@string/username_hint" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_edit_profile"
