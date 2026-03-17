@@ -148,7 +148,7 @@ class PostRepository(
 
             val allFetchedPosts = mutableListOf<Post>()
 
-            likedPostIds.chunked(10).forEach { chunk ->
+            likedPostIds.chunked(PAGE_SIZE).forEach { chunk ->
                 val snapshot = firestore.collection(POSTS_COLLECTION)
                     .whereIn("id", chunk)
                     .get().await()

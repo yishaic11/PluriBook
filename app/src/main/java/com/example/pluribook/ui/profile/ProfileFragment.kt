@@ -126,6 +126,18 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
         }
 
+        profileViewModel.likedPostIds.observe(viewLifecycleOwner) { ids ->
+            if (tabLayout.selectedTabPosition == 1) {
+                pagingJob?.cancel()
+                pagingJob = viewLifecycleOwner.lifecycleScope.launch {
+                    profileViewModel.getLikedPostsFlow(ids).collectLatest { pagingData ->
+                        loadedCount = 0
+                        adapter.submitData(pagingData)
+                    }
+                }
+            }
+        }
+
         profileViewModel.loadUserProfile(targetProfileId)
 
         observeUserPosts()
@@ -134,22 +146,15 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private fun observeUserPosts() {
         pagingJob?.cancel()
         pagingJob = viewLifecycleOwner.lifecycleScope.launch {
-            profileViewModel.userPostsFlow.collectLatest { pagingData ->
+            profileViewModel.getPostsFlow(targetProfileId).collectLatest { pagingData ->
                 loadedCount = 0
                 adapter.submitData(pagingData)
             }
         }
-        profileViewModel.loadUserPosts(targetProfileId)
+        profileViewModel.refreshUserPosts(targetProfileId)
     }
 
     private fun observeLikedPosts() {
-        pagingJob?.cancel()
-        pagingJob = viewLifecycleOwner.lifecycleScope.launch {
-            profileViewModel.likedPostsFlow.collectLatest { pagingData ->
-                loadedCount = 0
-                adapter.submitData(pagingData)
-            }
-        }
-        profileViewModel.loadLikedPosts(targetProfileId)
+        profileViewModel.refreshLikedPosts(targetProfileId)
     }
 }
