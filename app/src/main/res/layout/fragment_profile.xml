@@ -6,11 +6,26 @@
     android:layout_height="match_parent"
     android:background="@color/pluri_light">
 
+    <ImageButton
+        android:id="@+id/button_back_profile"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/post_back_desc"
+        android:src="@android:drawable/ic_menu_revert"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/pluri_darkest"
+        tools:visibility="visible" />
+
     <ImageView
         android:id="@+id/image_logo"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:src="@drawable/pluribook_logo"
         app:layout_constraintEnd_toEndOf="parent"
@@ -60,18 +75,18 @@
         android:id="@+id/tab_layout_profile"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:background="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/image_profile_picture"
         app:tabGravity="fill"
-        app:tabMaxWidth="0dp"
         app:tabIconTint="@color/pluri_dark"
         app:tabIndicatorColor="@color/pluri_dark"
-        app:tabIndicatorHeight="3dp">
+        app:tabIndicatorHeight="3dp"
+        app:tabMaxWidth="0dp">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
@@ -99,5 +114,16 @@
         app:layout_goneMarginTop="24dp"
         app:spanCount="3"
         tools:listitem="@layout/item_post_grid" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar_profile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/pluri_darkest"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

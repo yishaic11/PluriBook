@@ -2,6 +2,8 @@ package com.example.pluribook.ui.profile
 
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -36,6 +38,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val btnEditProfile = view.findViewById<MaterialButton>(R.id.btn_edit_profile)
         val tabLayout = view.findViewById<TabLayout>(R.id.tab_layout_profile)
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view_posts)
+        val progressBar = view.findViewById<ProgressBar>(R.id.progress_bar_profile)
+        val buttonBack = view.findViewById<ImageButton>(R.id.button_back_profile)
 
         adapter = ProfilePostAdapter(emptyList()) { clickedPost ->
             val bundle = Bundle().apply {
@@ -48,14 +52,18 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val isCurrentUser = (targetProfileId == currentUserId)
 
         if (!isCurrentUser) {
+            buttonBack.visibility = View.VISIBLE
             btnEditProfile.visibility = View.GONE
             tabLayout.visibility = View.GONE
         } else {
+            buttonBack.visibility = View.GONE
             btnEditProfile.setOnClickListener {
                 Toast.makeText(requireContext(), "Edit Profile coming soon!", Toast.LENGTH_SHORT)
                     .show()
             }
         }
+
+        buttonBack.setOnClickListener { findNavController().navigateUp() }
 
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -76,7 +84,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         profileViewModel.userProfileState.observe(viewLifecycleOwner) { state ->
             when (state) {
+                is ResourceState.Loading -> {
+                    progressBar.visibility = View.VISIBLE
+                }
+
                 is ResourceState.Success -> {
+                    progressBar.visibility = View.GONE
                     val user = state.data
                     textUsername.text = user.username
 
@@ -91,11 +104,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 }
 
                 is ResourceState.Error -> {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
-                }
-
-                is ResourceState.Loading -> {
-                    // TODO: set a loading state for the text
                 }
             }
         }
@@ -103,14 +113,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         profileViewModel.profilePostsState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
-                    // TODO: Loading spinner
+                    progressBar.visibility = View.VISIBLE
                 }
 
                 is ResourceState.Success -> {
+                    progressBar.visibility = View.GONE
                     adapter.updatePosts(state.data)
                 }
 
                 is ResourceState.Error -> {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
             }
