@@ -45,6 +45,20 @@ class PostRepository(
         ).flow
     }
 
+    fun getPostsBySenderStream(senderId: String): Flow<PagingData<Post>> {
+        return Pager(
+            config = PagingConfig(pageSize = PAGE_SIZE, enablePlaceholders = false),
+            pagingSourceFactory = { postDao.getPagedPostsBySenderId(senderId) }
+        ).flow
+    }
+
+    fun getLikedPostsStream(postIds: List<String>): Flow<PagingData<Post>> {
+        return Pager(
+            config = PagingConfig(pageSize = PAGE_SIZE, enablePlaceholders = false),
+            pagingSourceFactory = { postDao.getPagedPostsByIds(postIds) }
+        ).flow
+    }
+
     suspend fun syncPostsFromFirebase(isRefresh: Boolean = false) {
         if (isFetching || (isEndOfList && !isRefresh)) return
         isFetching = true
@@ -96,7 +110,6 @@ class PostRepository(
             )
 
             firestore.collection(POSTS_COLLECTION).document(postId).set(newPost).await()
-
             postDao.insertPost(newPost)
 
             true
@@ -107,8 +120,8 @@ class PostRepository(
         }
     }
 
-    suspend fun getPostsBySender(senderId: String): List<Post> {
-        return try {
+    suspend fun syncUserPosts(senderId: String) {
+        try {
             val documents = firestore.collection(POSTS_COLLECTION)
                 .whereEqualTo("senderId", senderId)
                 .get()
@@ -119,17 +132,12 @@ class PostRepository(
             if (posts.isNotEmpty()) {
                 postDao.insertPosts(posts)
             }
-
-            postDao.getPostsBySenderId(senderId)
-
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching user posts for $senderId, falling back to local storage", e)
-
-            postDao.getPostsBySenderId(senderId)
+            Log.e(TAG, "Error fetching user posts for $senderId", e)
         }
     }
 
-    suspend fun getLikedPosts(userId: String): List<Post> {
+    suspend fun syncAndGetLikedPostIds(userId: String): List<String> {
         return try {
             val userDocument =
                 firestore.collection(UserRepository.USERS_COLLECTION).document(userId).get().await()
@@ -150,14 +158,13 @@ class PostRepository(
             postDao.insertPosts(allFetchedPosts)
             if (user != null) userDao.saveUser(user)
 
-            postDao.getPostsByIds(likedPostIds)
+            likedPostIds
 
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching liked posts, falling back to local storage", e)
 
             val localUser = userDao.getUserByUid(userId)
-            val localIds = localUser?.likedPosts ?: emptyList()
-            if (localIds.isEmpty()) emptyList() else postDao.getPostsByIds(localIds)
+            localUser?.likedPosts ?: emptyList()
         }
     }
 

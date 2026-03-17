@@ -19,12 +19,11 @@ interface PostDao {
     @Query("SELECT * FROM posts ORDER BY createdAt DESC")
     fun getPagedPosts(): PagingSource<Int, Post>
 
-    @Query("SELECT * FROM posts WHERE senderId = :id")
-    suspend fun getPostsBySenderId(id: String): List<Post>
+    @Query("SELECT * FROM posts WHERE senderId = :id ORDER BY createdAt DESC")
+    fun getPagedPostsBySenderId(id: String): PagingSource<Int, Post>
 
     @Query("SELECT * FROM posts WHERE id IN (:postIds) ORDER BY createdAt DESC")
-    suspend fun getPostsByIds(postIds: List<String>): List<Post>
-
+    fun getPagedPostsByIds(postIds: List<String>): PagingSource<Int, Post>
     @Query(
         """
         UPDATE posts 

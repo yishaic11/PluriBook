@@ -4,19 +4,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pluribook.R
 import com.example.pluribook.data.model.Post
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class ProfilePostAdapter(
-    private var posts: List<Post>,
-    private val onPostClicked: (Post) -> Unit
-) : RecyclerView.Adapter<ProfilePostAdapter.ProfileViewHolder>() {
-
-    class ProfileViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imagePostGrid: ImageView = view.findViewById(R.id.image_post_grid)
-    }
+    private val onImageLoaded: () -> Unit,
+    private val onPostClick: (Post) -> Unit
+) : PagingDataAdapter<Post, ProfilePostAdapter.ProfileViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProfileViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -25,26 +24,44 @@ class ProfilePostAdapter(
     }
 
     override fun onBindViewHolder(holder: ProfileViewHolder, position: Int) {
-        val post = posts[position]
-
-        if (post.photoUrl.isNotEmpty()) {
-            Picasso.get()
-                .load(post.photoUrl)
-                .placeholder(R.drawable.default_profile_photo)
-                .fit()
-                .centerCrop()
-                .into(holder.imagePostGrid)
-        }
-
-        holder.itemView.setOnClickListener {
-            onPostClicked(post)
+        val post = getItem(position)
+        if (post != null) {
+            holder.bind(post, onPostClick, onImageLoaded)
         }
     }
 
-    override fun getItemCount(): Int = posts.size
+    class ProfileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val ivPhoto: ImageView = itemView.findViewById(R.id.image_post_grid)
 
-    fun updatePosts(newPosts: List<Post>) {
-        posts = newPosts
-        notifyDataSetChanged()
+        fun bind(post: Post, onPostClick: (Post) -> Unit, onImageLoaded: () -> Unit) {
+            if (post.photoUrl.isNotEmpty()) {
+                Picasso.get()
+                    .load(post.photoUrl)
+                    .placeholder(R.drawable.default_profile_photo)
+                    .fit()
+                    .centerCrop()
+                    .into(ivPhoto, object : Callback {
+                        override fun onSuccess() {
+                            onImageLoaded()
+                        }
+
+                        override fun onError(e: Exception?) {
+                            onImageLoaded()
+                        }
+                    })
+            } else {
+                onImageLoaded()
+            }
+
+            itemView.setOnClickListener { onPostClick(post) }
+        }
+    }
+
+    class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
+        override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean =
+            oldItem.id == newItem.id
+
+        override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean =
+            oldItem == newItem
     }
 }
