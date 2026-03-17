@@ -12,7 +12,12 @@ data class Post(
     val description: String,
     val senderId: String,
     val createdAt: Long = System.currentTimeMillis(),
-    val likedBy: List<String> = emptyList()
+    val likedBy: List<String> = emptyList(),
+    // Book details from Google Books API
+    val bookTitle: String = "",
+    val bookAuthor: String = "",
+    val bookSummary: String = "",
+    val bookRating: Double = 0.0,
 ) {
-    constructor () : this("", "", "", "", 0L, emptyList())
+    constructor () : this("", "", "", "", 0L, emptyList(), "", "", "", 0.0)
 }
