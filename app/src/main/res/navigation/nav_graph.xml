@@ -106,4 +106,15 @@
         android:label="Comments"
         tools:layout="@layout/fragment_comment" />
 
+    <fragment
+        android:id="@+id/other_profile_fragment"
+        android:name="com.example.pluribook.ui.profile.ProfileFragment"
+        android:label="User Profile"
+        tools:layout="@layout/fragment_profile">
+
+        <action
+            android:id="@+id/action_otherProfile_to_postDetail"
+            app:destination="@id/post_fragment" />
+    </fragment>
+
 </navigation>
