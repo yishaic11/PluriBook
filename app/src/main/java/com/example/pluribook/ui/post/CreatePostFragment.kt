@@ -29,7 +29,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
     private var selectedImageUri: Uri? = null
     private lateinit var imageView: ImageView
-    private val viewModel: CreatePostViewModel by viewModels()
+    private val createPostViewModel: CreatePostViewModel by viewModels()
 
     private val pickMediaLauncher =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -70,10 +70,10 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
         layoutBookSearch.setEndIconOnClickListener {
             val query = editTextBookSearch.text.toString()
-            viewModel.searchBooks(query)
+            createPostViewModel.searchBooks(query)
         }
 
-        viewModel.searchResults.observe(viewLifecycleOwner) { state ->
+        createPostViewModel.searchResultsState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
                     progressBarSearch.visibility = View.VISIBLE
@@ -96,7 +96,9 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
                         .setTitle("Select your Book")
                         .setItems(bookTitles) { _, which ->
                             val selected = books[which]
-                            viewModel.selectedBook = selected
+                            createPostViewModel.selectedBook = selected
+
+                            selectedImageUri = null
 
                             layoutPostForm.visibility = View.VISIBLE
 
@@ -114,7 +116,9 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
                                 View.GONE
                             else {
                                 textSelectedRating.visibility = View.VISIBLE
-                                textSelectedRating.text = "★ $rating / 5.0"
+                                textSelectedRating.text =
+                                    getString(R.string.post_book_rating_format, rating.toString())
+
                             }
 
                             val summary = selected.volumeInfo.description
@@ -129,10 +133,10 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
                                 "https:"
                             )
                             if (!thumbUrl.isNullOrEmpty()) {
-                                viewModel.defaultImageUrl = thumbUrl
+                                createPostViewModel.defaultImageUrl = thumbUrl
                                 Picasso.get().load(thumbUrl).into(imageView)
                             } else {
-                                viewModel.defaultImageUrl = null
+                                createPostViewModel.defaultImageUrl = null
                                 imageView.setImageResource(R.drawable.create_post_image_upload_icon)
                             }
                         }.show()
@@ -160,10 +164,10 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
         btnSave.setOnClickListener {
             val description = descriptionEditText.text.toString().trim()
-            viewModel.createPost(selectedImageUri, description)
+            createPostViewModel.createPost(selectedImageUri, description)
         }
 
-        viewModel.postState.observe(viewLifecycleOwner) { state ->
+        createPostViewModel.postState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
                     btnSave.isEnabled = false
@@ -181,7 +185,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
                 is ResourceState.Error -> {
                     btnSave.isEnabled = true
-                    btnSave.text = "Save"
+                    btnSave.setText(R.string.create_post_save_button_error_text)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
             }

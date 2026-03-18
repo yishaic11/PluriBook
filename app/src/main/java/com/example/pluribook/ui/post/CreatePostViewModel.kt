@@ -26,8 +26,8 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
     private val _postState = MutableLiveData<ResourceState<Unit>>()
     val postState: LiveData<ResourceState<Unit>> = _postState
 
-    private val _searchResults = MutableLiveData<ResourceState<List<BookItem>>>()
-    val searchResults: LiveData<ResourceState<List<BookItem>>> = _searchResults
+    private val _searchResultsState = MutableLiveData<ResourceState<List<BookItem>>>()
+    val searchResultsState: LiveData<ResourceState<List<BookItem>>> = _searchResultsState
 
     var selectedBook: BookItem? = null
     var defaultImageUrl: String? = null
@@ -35,9 +35,9 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
     fun searchBooks(query: String) {
         if (query.isBlank()) return
 
-        _searchResults.value = ResourceState.Loading
+        _searchResultsState.value = ResourceState.Loading
 
-        val request = BookNetworkClient.bookApi.searchBooks(query)
+        val request = BookNetworkClient.bookApi.fetchBooks(query)
 
         request.enqueue(object : retrofit2.Callback<BookSearchResponse> {
 
@@ -47,14 +47,14 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
             ) {
                 if (response.isSuccessful) {
                     val books = response.body()?.items ?: emptyList()
-                    _searchResults.value = ResourceState.Success(books)
+                    _searchResultsState.value = ResourceState.Success(books)
                 } else {
-                    _searchResults.value = ResourceState.Error("Error response: ${response.code()}")
+                    _searchResultsState.value = ResourceState.Error("Error response: ${response.code()}")
                 }
             }
 
             override fun onFailure(call: retrofit2.Call<BookSearchResponse>, t: Throwable) {
-                _searchResults.value = ResourceState.Error("Failed to search books: ${t.message}")
+                _searchResultsState.value = ResourceState.Error("Failed to search books: ${t.message}")
             }
         })
     }

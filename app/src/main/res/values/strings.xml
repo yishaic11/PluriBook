@@ -56,7 +56,7 @@
     <string name="post_username_placeholder">Israel Israeli</string>
     <string name="post_desc_placeholder">This is the main text content of the post...</string>
     <string name="post_book_author_format">By %1$s</string>
-    <string name="post_book_rating_format">Rating: %1$.1f</string>
+    <string name="post_book_rating_format">★ %1$s / 5.0</string>
     <string name="post_book_summary">A young boy discovers he is a wizard...</string>
     <!-- Comment -->
     <string name="comments_title">Comments</string>
