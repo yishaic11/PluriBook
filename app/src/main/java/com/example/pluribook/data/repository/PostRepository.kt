@@ -93,20 +93,36 @@ class PostRepository(
         }
     }
 
-    suspend fun createPost(imageUri: Uri, description: String): Boolean {
+    suspend fun createPost(
+        imageUri: Uri?,
+        defaultImageUrl: String?,
+        description: String,
+        title: String,
+        author: String,
+        summary: String,
+        rating: Double
+    ): Boolean {
         return try {
             val postId = UUID.randomUUID().toString()
             val userId = auth.currentUser?.uid ?: throw Exception("User not logged in")
 
-            val storageRef = storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg")
-            storageRef.putFile(imageUri).await()
-            val downloadUrl = storageRef.downloadUrl.await().toString()
+            val downloadUrl = if (imageUri != null) {
+                val storageRef = storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg")
+                storageRef.putFile(imageUri).await()
+                storageRef.downloadUrl.await().toString()
+            } else {
+                defaultImageUrl ?: ""
+            }
 
             val newPost = Post(
                 id = postId,
                 photoUrl = downloadUrl,
                 description = description,
-                senderId = userId
+                senderId = userId,
+                bookTitle = title,
+                bookAuthor = author,
+                bookSummary = summary,
+                bookRating = rating
             )
 
             firestore.collection(POSTS_COLLECTION).document(postId).set(newPost).await()
