@@ -17,7 +17,11 @@ data class Post(
     val bookTitle: String = "",
     val bookAuthor: String = "",
     val bookSummary: String = "",
-    val bookRating: Double = 0.0,
+    val bookRating: Double = DEFAULT_RATING
 ) {
-    constructor () : this("", "", "", "", 0L, emptyList(), "", "", "", 0.0)
+    companion object {
+        const val DEFAULT_RATING = 0.0
+    }
+
+    constructor () : this("", "", "", "", 0L, emptyList(), "", "", "", DEFAULT_RATING)
 }

@@ -122,7 +122,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/image_post_photo"
-                tools:text="Harry Potter and the Sorcerer's Stone" />
+                tools:text="@string/post_book_title_placeholder" />
 
             <TextView
                 android:id="@+id/text_book_author"
@@ -135,7 +135,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/text_book_title"
-                tools:text="By J.K. Rowling" />
+                tools:text="@string/post_book_author_placeholder" />
 
             <TextView
                 android:id="@+id/text_book_rating"
@@ -168,7 +168,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/pluri_darkest"
                     android:textSize="16sp"
-                    tools:text="@string/post_book_summary" />
+                    tools:text="@string/post_book_summary_placeholder" />
 
             </androidx.core.widget.NestedScrollView>
 

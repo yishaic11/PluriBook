@@ -57,7 +57,9 @@
     <string name="post_desc_placeholder">This is the main text content of the post...</string>
     <string name="post_book_author_format">By %1$s</string>
     <string name="post_book_rating_format">★ %1$s / 5.0</string>
-    <string name="post_book_summary">A young boy discovers he is a wizard...</string>
+    <string name="post_book_summary_placeholder">A young boy discovers he is a wizard...</string>
+    <string name="post_book_author_placeholder">By J.K. Rowling</string>
+    <string name="post_book_title_placeholder">"Harry Potter and the Sorcerer's Stone"</string>
     <!-- Comment -->
     <string name="comments_title">Comments</string>
     <string name="comment_options_desc">Options (Delete)</string>

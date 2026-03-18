@@ -15,6 +15,7 @@ import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.pluribook.R
+import com.example.pluribook.data.model.Post
 import com.example.pluribook.ui.comment.CommentViewModel
 import com.example.pluribook.utils.ResourceState
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -153,11 +154,12 @@ class PostFragment : Fragment(R.layout.fragment_post) {
                             getString(R.string.post_book_author_format, post.bookAuthor)
                     }
 
-                    if (post.bookRating == 0.0) textBookRating.visibility = View.GONE
+                    if (post.bookRating == Post.DEFAULT_RATING) textBookRating.visibility =
+                        View.GONE
                     else {
                         textBookRating.visibility = View.VISIBLE
                         textBookRating.text =
-                            getString(R.string.post_book_rating_format, post.bookRating)
+                            getString(R.string.post_book_rating_format, post.bookRating.toString())
                     }
 
                     if (post.bookSummary.isEmpty()) scrollSummary.visibility = View.GONE
