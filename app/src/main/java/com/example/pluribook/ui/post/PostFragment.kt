@@ -167,6 +167,20 @@ class PostFragment : Fragment(R.layout.fragment_post) {
                         scrollSummary.visibility = View.VISIBLE
                         textBookSummary.text = post.bookSummary
                     }
+                    val navigateToProfile = View.OnClickListener {
+                        val bundle = Bundle().apply {
+                            putString("targetUserId", post.senderId)
+                        }
+
+                        if (post.senderId == viewModel.currentUserId) {
+                            findNavController().navigate(R.id.profile_fragment, bundle)
+                        } else {
+                            findNavController().navigate(R.id.other_profile_fragment, bundle)
+                        }
+                    }
+
+                    textSenderName.setOnClickListener(navigateToProfile)
+                    imageSenderProfile.setOnClickListener(navigateToProfile)
                 }
 
                 is ResourceState.Error -> {

@@ -79,6 +79,10 @@
             android:id="@+id/action_profile_fragment_to_create_post_fragment"
             app:destination="@id/create_post_fragment"
             app:launchSingleTop="true" />
+
+        <action
+            android:id="@+id/action_profileFragment_to_postDetailFragment"
+            app:destination="@id/post_fragment" />
     </fragment>
 
     <fragment
@@ -86,6 +90,11 @@
         android:name="com.example.pluribook.ui.post.PostFragment"
         android:label="@string/nav_post"
         tools:layout="@layout/fragment_post">
+
+        <argument
+            android:name="postId"
+            app:argType="string" />
+
         <action
             android:id="@+id/action_post_fragment_to_comment_fragment"
             app:destination="@id/comment_fragment" />
@@ -96,5 +105,16 @@
         android:name="com.example.pluribook.ui.comment.CommentFragment"
         android:label="Comments"
         tools:layout="@layout/fragment_comment" />
+
+    <fragment
+        android:id="@+id/other_profile_fragment"
+        android:name="com.example.pluribook.ui.profile.ProfileFragment"
+        android:label="User Profile"
+        tools:layout="@layout/fragment_profile">
+
+        <action
+            android:id="@+id/action_otherProfile_to_postDetail"
+            app:destination="@id/post_fragment" />
+    </fragment>
 
 </navigation>

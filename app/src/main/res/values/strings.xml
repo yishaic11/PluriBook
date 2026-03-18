@@ -1,8 +1,8 @@
 <resources>
-    <!-- App -->
+    <!--  App  -->
     <string name="app_name">PluriBook</string>
     <string name="app_logo">PluriBook logo</string>
-    <!-- Nav Menu -->
+    <!--  Nav Menu  -->
     <string name="nav_home">Home</string>
     <string name="nav_create_post">Create Post</string>
     <string name="nav_user_profile">User Profile</string>
