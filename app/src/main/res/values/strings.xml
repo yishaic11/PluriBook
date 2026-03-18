@@ -66,4 +66,6 @@
     <string name="comment_text_placeholder">This is an amazing book review!</string>
     <string name="comment_username_placeholder">Israel Israeli</string>
     <string name="comment_back_desc">Back</string>
+    <!-- Edit Post-->
+    <string name="edit_post_header">Edit Post</string>
 </resources>

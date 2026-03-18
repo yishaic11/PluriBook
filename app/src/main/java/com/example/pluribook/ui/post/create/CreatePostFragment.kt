@@ -1,4 +1,4 @@
-package com.example.pluribook.ui.post
+package com.example.pluribook.ui.post.create
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.pluribook.R
+import com.example.pluribook.data.model.Post
 import com.example.pluribook.utils.ResourceState
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -112,7 +113,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
                             }
 
                             val rating = selected.volumeInfo.averageRating
-                            if (rating == null || rating == 0.0) textSelectedRating.visibility =
+                            if (rating == null || rating == Post.DEFAULT_RATING) textSelectedRating.visibility =
                                 View.GONE
                             else {
                                 textSelectedRating.visibility = View.VISIBLE
