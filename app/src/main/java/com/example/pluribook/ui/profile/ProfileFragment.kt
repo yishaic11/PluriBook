@@ -84,7 +84,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         } else {
             buttonBack.visibility = View.GONE
             btnEditProfile.setOnClickListener {
-                Toast.makeText(requireContext(), "Edit Profile coming soon!", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.action_profile_fragment_to_edit_profile_fragment)
             }
         }
 
@@ -97,6 +97,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     1 -> observeLikedPosts()
                 }
             }
+
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
@@ -115,10 +116,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                     textUsername.text = user.username
 
                     if (user.photoUrl.isNotEmpty()) {
-                        Picasso.get().load(user.photoUrl).placeholder(R.drawable.create_post_nav_icon)
+                        Picasso.get().load(user.photoUrl)
+                            .placeholder(R.drawable.default_profile_photo)
                             .fit().centerCrop().into(imageProfile)
                     }
                 }
+
                 is ResourceState.Error -> {
                     centralProgress.visibility = View.GONE
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
