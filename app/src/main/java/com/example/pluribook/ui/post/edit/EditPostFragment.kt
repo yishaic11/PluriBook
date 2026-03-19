@@ -236,7 +236,7 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
 
                 is ResourceState.Error -> {
                     btnSave.isEnabled = true
-                    btnSave.text = getString(R.string.create_post_save_button_default_text)
+                    btnSave.text = getString(R.string.post_form_save_button_default_text)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
             }

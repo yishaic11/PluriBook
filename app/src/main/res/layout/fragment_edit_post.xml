@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="16dp"
-            android:hint="@string/create_post_book_search_hint"
+            android:hint="@string/post_form_book_search_hint"
             app:endIconDrawable="@android:drawable/ic_menu_search"
             app:endIconMode="custom"
             app:layout_constraintEnd_toEndOf="parent"
@@ -149,7 +149,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="8dp"
-                android:hint="@string/create_post_description_hint"
+                android:hint="@string/post_form_description_hint"
                 app:boxStrokeColor="@color/pluri_dark">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -176,7 +176,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="4dp"
                     android:layout_weight="1"
-                    android:text="@string/create_post_save_button_default_text"
+                    android:text="@string/post_form_save_button_default_text"
                     android:textColor="@color/pluri_dark"
                     app:backgroundTint="@color/pluri_light" />
 
@@ -187,7 +187,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
                     android:layout_weight="1"
-                    android:text="@string/create_post_cancel_button_text"
+                    android:text="@string/post_form_cancel_button_text"
                     android:textColor="@color/pluri_dark" />
             </LinearLayout>
         </LinearLayout>
