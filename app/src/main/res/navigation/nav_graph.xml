@@ -52,7 +52,7 @@
 
     <fragment
         android:id="@+id/create_post_fragment"
-        android:name="com.example.pluribook.ui.post.CreatePostFragment"
+        android:name="com.example.pluribook.ui.post.create.CreatePostFragment"
         android:label="@string/nav_create_post"
         tools:layout="@layout/fragment_create_post">
         <action
@@ -115,6 +115,13 @@
         <action
             android:id="@+id/action_otherProfile_to_postDetail"
             app:destination="@id/post_fragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/edit_post_fragment"
+        android:name="com.example.pluribook.ui.post.edit.EditPostFragment"
+        android:label="Edit Post"
+        tools:layout="@layout/fragment_edit_post">
     </fragment>
 
 </navigation>

@@ -184,7 +184,51 @@ class PostRepository(
         }
     }
 
-    suspend fun updatePost() {}
+    suspend fun updatePost(
+        postId: String,
+        imageUri: Uri?,
+        imageUrlToSave: String,
+        description: String,
+        title: String,
+        author: String,
+        summary: String,
+        rating: Double
+    ): Boolean {
+        return try {
+            val finalPhotoUrl = if (imageUri != null) {
+                val storageRef = storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg")
+                storageRef.putFile(imageUri).await()
+                storageRef.downloadUrl.await().toString()
+            } else {
+                imageUrlToSave
+            }
+
+            val updates = mapOf(
+                "photoUrl" to finalPhotoUrl,
+                "description" to description,
+                "bookTitle" to title,
+                "bookAuthor" to author,
+                "bookSummary" to summary,
+                "bookRating" to rating
+            )
+            firestore.collection(POSTS_COLLECTION).document(postId).update(updates).await()
+
+            postDao.updatePost(
+                postId,
+                description,
+                finalPhotoUrl,
+                title,
+                author,
+                summary,
+                rating
+            )
+
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating post", e)
+            false
+        }
+    }
 
     suspend fun toggleLike(postId: String, currentUserId: String, isCurrentlyLiked: Boolean) {
         val post = postDao.getPostById(postId)

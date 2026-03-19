@@ -1,4 +1,4 @@
-package com.example.pluribook.ui.post
+package com.example.pluribook.ui.post.create
 
 import android.app.Application
 import android.net.Uri
@@ -12,15 +12,18 @@ import com.example.pluribook.TAG
 import com.example.pluribook.data.api.BookItem
 import com.example.pluribook.data.api.BookNetworkClient
 import com.example.pluribook.data.api.BookSearchResponse
+import com.example.pluribook.data.model.Post
 import com.example.pluribook.data.repository.PostRepository
 import com.example.pluribook.utils.ResourceState
 import kotlinx.coroutines.launch
 
 class CreatePostViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val app = (application as PluribookApplication)
+    private val postDao = app.database.postDao()
+    private val userDao = app.database.userDao()
     private val repository = PostRepository(
-        (application as PluribookApplication).database.postDao(),
-        application.database.userDao()
+        postDao, userDao
     )
 
     private val _postState = MutableLiveData<ResourceState<Unit>>()
@@ -81,7 +84,7 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
         val title = book.volumeInfo.title ?: "Unknown Title"
         val author = book.volumeInfo.authors?.firstOrNull() ?: ""
         val summary = book.volumeInfo.description ?: ""
-        val rating = book.volumeInfo.averageRating ?: 0.0
+        val rating = book.volumeInfo.averageRating ?: Post.DEFAULT_RATING
 
         viewModelScope.launch {
             try {

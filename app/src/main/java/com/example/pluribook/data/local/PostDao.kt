@@ -24,16 +24,24 @@ interface PostDao {
 
     @Query("SELECT * FROM posts WHERE id IN (:postIds) ORDER BY createdAt DESC")
     fun getPagedPostsByIds(postIds: List<String>): PagingSource<Int, Post>
+
     @Query(
         """
         UPDATE posts 
         SET 
-            description = COALESCE(:description, description),
-            photoUrl = COALESCE(:photoUrl, photoUrl)
+            description = :description,
+            photoUrl = :photoUrl,
+            bookTitle = :bookTitle,
+            bookAuthor = :bookAuthor,
+            bookSummary = :bookSummary,
+            bookRating = :bookRating
         WHERE id = :postId
     """
     )
-    suspend fun updatePost(postId: String, description: String?, photoUrl: String?)
+    suspend fun updatePost(
+        postId: String, description: String, photoUrl: String,
+        bookTitle: String, bookAuthor: String, bookSummary: String, bookRating: Double
+    )
 
     @Query("DELETE FROM posts WHERE id = :postId")
     suspend fun deletePost(postId: String)
