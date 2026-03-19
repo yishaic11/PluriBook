@@ -19,9 +19,11 @@ import kotlinx.coroutines.launch
 
 class CreatePostViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val app = (application as PluribookApplication)
+    private val postDao = app.database.postDao()
+    private val userDao = app.database.userDao()
     private val repository = PostRepository(
-        (application as PluribookApplication).database.postDao(),
-        application.database.userDao()
+        postDao, userDao
     )
 
     private val _postState = MutableLiveData<ResourceState<Unit>>()

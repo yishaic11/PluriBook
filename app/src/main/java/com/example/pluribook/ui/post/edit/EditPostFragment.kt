@@ -30,7 +30,7 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
 
     private var selectedImageUri: Uri? = null
     private lateinit var imageView: ImageView
-    private val viewModel: EditPostViewModel by viewModels()
+    private val editPostViewModel: EditPostViewModel by viewModels()
     private var postId: String? = null
 
     private var isDataPopulated = false
@@ -82,10 +82,10 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
         val scrollSummary = view.findViewById<View>(R.id.edit_post_scroll_selected_summary)
 
         if (postId != null && !isDataPopulated) {
-            viewModel.loadPost(postId!!)
+            editPostViewModel.loadPost(postId!!)
         }
 
-        viewModel.originalPost.observe(viewLifecycleOwner) { state ->
+        editPostViewModel.originalPost.observe(viewLifecycleOwner) { state ->
             if (state is ResourceState.Success) {
                 val post = state.data
                 layoutPostForm.visibility = View.VISIBLE
@@ -126,11 +126,11 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
         layoutBookSearch.setEndIconOnClickListener {
             val query = editTextBookSearch.text.toString()
             if (query.isNotBlank()) {
-                viewModel.searchBooks(query)
+                editPostViewModel.searchBooks(query)
             }
         }
 
-        viewModel.searchResults.observe(viewLifecycleOwner) { state ->
+        editPostViewModel.searchResults.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
                     progressBarSearch.visibility = View.VISIBLE
@@ -153,7 +153,7 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
                         .setTitle("Select new Book")
                         .setItems(bookTitles) { _, which ->
                             val selected = books[which]
-                            viewModel.selectedBook = selected
+                            editPostViewModel.selectedBook = selected
 
                             selectedImageUri = null
 
@@ -187,10 +187,10 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
                                 "https:"
                             )
                             if (!thumbUrl.isNullOrEmpty()) {
-                                viewModel.defaultImageUrl = thumbUrl
+                                editPostViewModel.defaultImageUrl = thumbUrl
                                 Picasso.get().load(thumbUrl).into(imageView)
                             } else {
-                                viewModel.defaultImageUrl = null
+                                editPostViewModel.defaultImageUrl = null
                                 imageView.setImageResource(R.drawable.create_post_image_upload_icon)
                             }
                         }.show()
@@ -218,11 +218,11 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
         btnSave.setOnClickListener {
             postId?.let { id ->
                 val description = descriptionEditText.text.toString().trim()
-                viewModel.updatePost(id, selectedImageUri, description)
+                editPostViewModel.updatePost(id, selectedImageUri, description)
             }
         }
 
-        viewModel.updateState.observe(viewLifecycleOwner) { state ->
+        editPostViewModel.updateState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
                     btnSave.isEnabled = false
