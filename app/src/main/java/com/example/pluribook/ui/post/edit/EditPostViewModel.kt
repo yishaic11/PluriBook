@@ -20,9 +20,11 @@ import kotlinx.coroutines.launch
 
 class EditPostViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val app = (application as PluribookApplication)
+    private val postDao = app.database.postDao()
+    private val userDao = app.database.userDao()
     private val repository = PostRepository(
-        (application as PluribookApplication).database.postDao(),
-        application.database.userDao()
+        postDao, userDao
     )
 
     private val _originalPost = MutableLiveData<ResourceState<Post>>()
@@ -42,8 +44,7 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
         _originalPost.value = ResourceState.Loading
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val post = (getApplication() as PluribookApplication).database.postDao()
-                    .getPostById(postId)
+                val post = postDao.getPostById(postId)
                 if (post != null) {
                     loadedPostData = post
                     _originalPost.postValue(ResourceState.Success(post))
