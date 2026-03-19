@@ -217,7 +217,10 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         val textEdit = bottomSheetDialog.findViewById<TextView>(R.id.text_edit_post)
         textEdit?.setOnClickListener {
             bottomSheetDialog.dismiss()
-            Toast.makeText(requireContext(), "Edit coming soon", Toast.LENGTH_SHORT).show()
+            if (postId != null) {
+                val bundle = bundleOf("postId" to postId)
+                findNavController().navigate(R.id.edit_post_fragment, bundle)
+            }
         }
 
         val textDelete = bottomSheetDialog.findViewById<TextView>(R.id.text_delete_post)
