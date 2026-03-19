@@ -25,24 +25,25 @@
     <string name="logout">Logout</string>
     <!-- Create Post-->
     <string name="create_post_description_hint">Tell us what you thought of the book…</string>
-    <string name="create_post_save_button_text">Save</string>
+    <string name="create_post_save_button_default_text">Save</string>
+    <string name="create_post_save_button_updating_text">Updating…</string>
     <string name="create_post_cancel_button_text">Cancel</string>
     <string name="create_post_image_view_content_desc">Upload an image for your post</string>
-    <string name="create_post_save_button_loading_text">Publishing...</string>
+    <string name="create_post_save_button_loading_text">Publishing…</string>
     <string name="create_post_save_button_error_text">Save</string>
-    <string name="create_post_save_button_uploading_text">Uploading...</string>
+    <string name="create_post_save_button_uploading_text">Uploading…</string>
     <string name="create_post_success_toast_text">Post published!</string>
     <string name="create_post_missing_input_toast_text">Please add a photo and a description</string>
     <string name="create_post_camera_error_toast_text">Failed to capture photo</string>
     <string name="create_post_no_media_selected_toast_text">No media selected</string>
-    <string name="create_post_book_search_hint">Search for a Book...</string>
+    <string name="create_post_book_search_hint">Search for a Book…</string>
     <!-- Post -->
     <string name="post_image_desc">Post image</string>
     <string name="post_stub">Full Post View</string>
     <string name="post_back_desc">Back</string>
     <string name="post_bottom_options_edit">Edit Post</string>
     <string name="post_bottom_options_delete">Delete Post</string>
-    <string name="post_add_comment_hint">"Add a Comment..."</string>
+    <string name="post_add_comment_hint">"Add a Comment…"</string>
     <string name="post_likes_count_stub">52 likes</string>
     <string name="post_view_comments_stub">View all 56 comments</string>
     <string name="post_options_desc">Options (Edit or Delete)</string>
@@ -54,10 +55,10 @@
         <item quantity="other">%1$d likes</item>
     </plurals>
     <string name="post_username_placeholder">Israel Israeli</string>
-    <string name="post_desc_placeholder">This is the main text content of the post...</string>
+    <string name="post_desc_placeholder">This is the main text content of the post…</string>
     <string name="post_book_author_format">By %1$s</string>
     <string name="post_book_rating_format">★ %1$s / 5.0</string>
-    <string name="post_book_summary_placeholder">A young boy discovers he is a wizard...</string>
+    <string name="post_book_summary_placeholder">A young boy discovers he is a wizard…</string>
     <string name="post_book_author_placeholder">By J.K. Rowling</string>
     <string name="post_book_title_placeholder">"Harry Potter and the Sorcerer's Stone"</string>
     <!-- Comment -->
