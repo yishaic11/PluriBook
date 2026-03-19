@@ -2,19 +2,21 @@ package com.example.pluribook.ui.post.edit
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.pluribook.PluribookApplication
+import com.example.pluribook.TAG
+import com.example.pluribook.data.api.BookItem
+import com.example.pluribook.data.api.BookNetworkClient
+import com.example.pluribook.data.api.BookSearchResponse
 import com.example.pluribook.data.model.Post
 import com.example.pluribook.data.repository.PostRepository
 import com.example.pluribook.utils.ResourceState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.example.pluribook.data.api.BookItem
-import com.example.pluribook.data.api.BookNetworkClient
-import com.example.pluribook.data.api.BookSearchResponse
 
 class EditPostViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -39,13 +41,22 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
     fun loadPost(postId: String) {
         _originalPost.value = ResourceState.Loading
         viewModelScope.launch(Dispatchers.IO) {
-            val post =
-                (getApplication() as PluribookApplication).database.postDao().getPostById(postId)
-            if (post != null) {
-                loadedPostData = post
-                _originalPost.postValue(ResourceState.Success(post))
-            } else {
-                _originalPost.postValue(ResourceState.Error("Failed to load post data"))
+            try {
+                val post = (getApplication() as PluribookApplication).database.postDao()
+                    .getPostById(postId)
+                if (post != null) {
+                    loadedPostData = post
+                    _originalPost.postValue(ResourceState.Success(post))
+                } else {
+                    _originalPost.postValue(ResourceState.Error("Failed to load post data"))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading original post", e)
+                _originalPost.postValue(
+                    ResourceState.Error(
+                        e.message ?: "Failed to load post data"
+                    )
+                )
             }
         }
     }
@@ -63,7 +74,9 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
                 if (response.isSuccessful) {
                     val books = response.body()?.items ?: emptyList()
                     _searchResults.value = ResourceState.Success(books)
-                } else _searchResults.value = ResourceState.Error("Error: ${response.code()}")
+                } else {
+                    _searchResults.value = ResourceState.Error("Error: ${response.code()}")
+                }
             }
 
             override fun onFailure(call: retrofit2.Call<BookSearchResponse>, t: Throwable) {
@@ -89,25 +102,30 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
 
         val imageUrlToSave = if (imageUri == null && book != null) {
             defaultImageUrl ?: ""
-        } else if (imageUri == null && book == null) {
+        } else if (imageUri == null) {
             oldPost.photoUrl
         } else {
             defaultImageUrl ?: oldPost.photoUrl
         }
 
         viewModelScope.launch {
-            val success = repository.updatePost(
-                postId,
-                imageUri,
-                imageUrlToSave,
-                description,
-                title,
-                author,
-                summary,
-                rating
-            )
-            if (success) _updateState.value = ResourceState.Success(Unit)
-            else _updateState.value = ResourceState.Error("Failed to update post.")
+            try {
+                val success = repository.updatePost(
+                    postId,
+                    imageUri,
+                    imageUrlToSave,
+                    description,
+                    title,
+                    author,
+                    summary,
+                    rating
+                )
+                if (success) _updateState.value = ResourceState.Success(Unit)
+                else _updateState.value = ResourceState.Error("Failed to update post.")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating post", e)
+                _updateState.value = ResourceState.Error(e.message ?: "An error occurred")
+            }
         }
     }
 }
