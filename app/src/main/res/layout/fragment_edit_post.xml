@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/nav_create_post"
+            android:text="@string/edit_post_header"
             android:textColor="@color/pluri_darkest"
             android:textSize="24sp"
             android:textStyle="bold"
@@ -52,9 +52,9 @@
             android:layout_marginEnd="16dp"
             android:indeterminateTint="@color/pluri_darkest"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/text_input_book_search"
-            app:layout_constraintEnd_toEndOf="@id/text_input_book_search"
-            app:layout_constraintTop_toTopOf="@id/text_input_book_search" />
+            app:layout_constraintBottom_toBottomOf="@id/edit_post_text_input_book_search"
+            app:layout_constraintEnd_toEndOf="@id/edit_post_text_input_book_search"
+            app:layout_constraintTop_toTopOf="@id/edit_post_text_input_book_search" />
 
         <LinearLayout
             android:id="@+id/layout_post_form"
@@ -176,7 +176,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="4dp"
                     android:layout_weight="1"
-                    android:text="@string/create_post_save_button_text"
+                    android:text="@string/create_post_save_button_default_text"
                     android:textColor="@color/pluri_dark"
                     app:backgroundTint="@color/pluri_light" />
 
