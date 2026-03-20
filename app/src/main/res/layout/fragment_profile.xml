@@ -25,7 +25,7 @@
         android:id="@+id/image_logo"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="16dp"
         android:src="@drawable/pluribook_logo"
         app:layout_constraintEnd_toEndOf="parent"
