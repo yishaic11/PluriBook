@@ -20,14 +20,11 @@ import com.example.pluribook.ui.comment.CommentViewModel
 import com.example.pluribook.utils.ResourceState
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.imageview.ShapeableImageView
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.squareup.picasso.Picasso
 
 class PostFragment : Fragment(R.layout.fragment_post) {
 
     private val viewModel: PostViewModel by viewModels()
-    private val commentViewModel: CommentViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -49,9 +46,6 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         val imageSenderProfile =
             view.findViewById<ShapeableImageView>(R.id.image_post_sender_profile)
 
-        val inputLayoutAddComment = view.findViewById<TextInputLayout>(R.id.text_input_add_comment)
-        val editTextAddComment = view.findViewById<TextInputEditText>(R.id.edit_text_add_comment)
-
         val textBookTitle = view.findViewById<TextView>(R.id.text_book_title)
         val textBookAuthor = view.findViewById<TextView>(R.id.text_book_author)
         val textBookRating = view.findViewById<TextView>(R.id.text_book_rating)
@@ -65,15 +59,6 @@ class PostFragment : Fragment(R.layout.fragment_post) {
             viewModel.getCommentCount(postId).observe(viewLifecycleOwner) { count ->
                 textViewAllComments.text =
                     if (count > 0) "View all $count comments" else "Be the first to comment!"
-            }
-
-            inputLayoutAddComment.setEndIconOnClickListener {
-                val text = editTextAddComment.text.toString()
-
-                if (text.isNotBlank()) {
-                    commentViewModel.addComment(postId, text) {}
-                    editTextAddComment.text?.clear()
-                }
             }
         }
 
