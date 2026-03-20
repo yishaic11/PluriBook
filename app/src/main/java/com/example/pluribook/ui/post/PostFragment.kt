@@ -27,8 +27,6 @@ class PostFragment : Fragment(R.layout.fragment_post) {
 
     private val postViewModel: PostViewModel by viewModels()
 
-    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-
     private val args: PostFragmentArgs by navArgs()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
