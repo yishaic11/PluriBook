@@ -7,8 +7,13 @@ import androidx.paging.PagingData
 import com.example.pluribook.TAG
 import com.example.pluribook.data.local.CommentDao
 import com.example.pluribook.data.model.Comment
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class CommentRepository(
@@ -17,13 +22,16 @@ class CommentRepository(
 ) {
 
     companion object {
-        private const val COMMENTS_COLLECTION = "posts"
+        private const val COMMENTS_COLLECTION = "comments"
         private const val PAGE_SIZE = 10
     }
 
-    private fun getCommentsRef(postId: String) =
-        firestore.collection(PostRepository.POSTS_COLLECTION).document(postId)
-            .collection(COMMENTS_COLLECTION)
+    private var commentListener: ListenerRegistration? = null
+
+    private val commentsCollection = firestore.collection(COMMENTS_COLLECTION)
+
+    private fun getPostCommentsQuery(postId: String) =
+        commentsCollection.whereEqualTo("postId", postId)
 
     fun getCommentStream(postId: String): Flow<PagingData<Comment>> {
         return Pager(
@@ -32,36 +40,56 @@ class CommentRepository(
         ).flow
     }
 
-    suspend fun syncComments(postId: String) {
-        try {
-            val snapshot = getCommentsRef(postId).get().await()
-            val comments = snapshot.toObjects(Comment::class.java)
-            commentDao.insertComments(comments)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching comments from Firebase", e)
-            e.printStackTrace()
+    fun syncComments(postId: String) {
+        commentListener?.remove()
+
+        commentListener = getPostCommentsQuery(postId).addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                Log.e(TAG, "Listen failed for comments.", e)
+                return@addSnapshotListener
+            }
+
+            snapshot?.let {
+                CoroutineScope(Dispatchers.IO).launch {
+                    for (documentChange in it.documentChanges) {
+                        val comment = documentChange.document.toObject(Comment::class.java)
+                        when (documentChange.type) {
+                            DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
+                                commentDao.insertComment(comment)
+                            }
+                            DocumentChange.Type.REMOVED -> {
+                                commentDao.deleteComment(comment.id)
+                            }
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    fun stopSyncingComments() {
+        commentListener?.remove()
+        commentListener = null
     }
 
     suspend fun addComment(comment: Comment): Boolean {
         return try {
-            getCommentsRef(comment.postId).document(comment.id).set(comment).await()
+            commentsCollection.document(comment.id).set(comment).await()
             commentDao.insertComment(comment)
+
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error creating comment: ${e.message}", e)
-            e.printStackTrace()
             false
         }
     }
 
     suspend fun deleteComment(postId: String, commentId: String) {
         try {
-            getCommentsRef(postId).document(commentId).delete().await()
+            commentsCollection.document(commentId).delete().await()
             commentDao.deleteComment(commentId)
         } catch (e: Exception) {
             Log.e(TAG, "Error deleting comment: ${e.message}", e)
-            e.printStackTrace()
         }
     }
 }
