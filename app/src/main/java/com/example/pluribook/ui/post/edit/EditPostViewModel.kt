@@ -10,8 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.pluribook.PluribookApplication
 import com.example.pluribook.TAG
 import com.example.pluribook.data.api.BookItem
-import com.example.pluribook.data.api.BookNetworkClient
-import com.example.pluribook.data.api.BookSearchResponse
 import com.example.pluribook.data.model.Post
 import com.example.pluribook.data.repository.PostRepository
 import com.example.pluribook.utils.ResourceState
@@ -21,11 +19,7 @@ import kotlinx.coroutines.launch
 class EditPostViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = (application as PluribookApplication)
-    private val postDao = app.database.postDao()
-    private val userDao = app.database.userDao()
-    private val repository = PostRepository(
-        postDao, userDao
-    )
+    private val repository = PostRepository(app.database.postDao(), app.database.userDao())
 
     private val _originalPost = MutableLiveData<ResourceState<Post>>()
     val originalPost: LiveData<ResourceState<Post>> = _originalPost
@@ -38,26 +32,19 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
 
     var selectedBook: BookItem? = null
     var defaultImageUrl: String? = null
-    var loadedPostData: Post? = null
 
     fun loadPost(postId: String) {
         _originalPost.value = ResourceState.Loading
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
-                val post = postDao.getPostById(postId)
+                val post = repository.fetchPost(postId)
                 if (post != null) {
-                    loadedPostData = post
                     _originalPost.postValue(ResourceState.Success(post))
                 } else {
-                    _originalPost.postValue(ResourceState.Error("Failed to load post data"))
+                    _originalPost.postValue(ResourceState.Error("Post not found"))
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading original post", e)
-                _originalPost.postValue(
-                    ResourceState.Error(
-                        e.message ?: "Failed to load post data"
-                    )
-                )
+                _originalPost.postValue(ResourceState.Error(e.message ?: "An error occurred"))
             }
         }
     }
@@ -65,37 +52,28 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
     fun searchBooks(query: String) {
         if (query.isBlank()) return
         _searchResults.value = ResourceState.Loading
-
-        val request = BookNetworkClient.bookApi.fetchBooks(query)
-        request.enqueue(object : retrofit2.Callback<BookSearchResponse> {
-            override fun onResponse(
-                call: retrofit2.Call<BookSearchResponse>,
-                response: retrofit2.Response<BookSearchResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val books = response.body()?.items ?: emptyList()
-                    _searchResults.value = ResourceState.Success(books)
-                } else {
-                    _searchResults.value = ResourceState.Error("Error: ${response.code()}")
-                }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val books = repository.searchBooks(query)
+                _searchResults.postValue(ResourceState.Success(books))
+            } catch (e: Exception) {
+                _searchResults.postValue(ResourceState.Error("Failed to search books"))
             }
-
-            override fun onFailure(call: retrofit2.Call<BookSearchResponse>, t: Throwable) {
-                _searchResults.value = ResourceState.Error("Failed to search books")
-            }
-        })
+        }
     }
 
     fun updatePost(postId: String, imageUri: Uri?, description: String) {
-        val oldPost = loadedPostData ?: return
+        val currentState = _originalPost.value
+        if (currentState !is ResourceState.Success) return
+        val oldPost = currentState.data
 
-        val potentialImageUrl = if (selectedBook != null) {
+        val imageUrlToSave = if (selectedBook != null) {
             defaultImageUrl ?: ""
         } else {
             oldPost.photoUrl
         }
 
-        if (imageUri == null && potentialImageUrl.isEmpty()) {
+        if (imageUri == null && imageUrlToSave.isEmpty()) {
             _updateState.value = ResourceState.Error("You must upload a photo to save this post.")
             return
         }
@@ -118,7 +96,7 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
                 val success = repository.updatePost(
                     postId,
                     imageUri,
-                    potentialImageUrl,
+                    imageUrlToSave,
                     description,
                     title,
                     author,

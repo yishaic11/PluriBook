@@ -43,7 +43,7 @@ class CommentFragment : Fragment(R.layout.fragment_comment) {
                 .setTitle("Comment Options")
                 .setItems(arrayOf("Delete Comment")) { _, which ->
                     if (which == 0) {
-                        viewModel.deleteComment(postId, comment.id)
+                        viewModel.deleteComment(comment.id)
                     }
                 }.show()
         }

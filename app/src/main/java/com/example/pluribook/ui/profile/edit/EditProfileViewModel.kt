@@ -2,24 +2,21 @@ package com.example.pluribook.ui.profile.edit
 
 import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.pluribook.PluribookApplication
 import com.example.pluribook.data.model.User
 import com.example.pluribook.data.repository.UserRepository
 import com.example.pluribook.utils.ResourceState
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class EditProfileViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val app = (application as PluribookApplication)
+    private val app = application as PluribookApplication
     private val userDao = app.database.userDao()
     private val userRepository = UserRepository(userDao)
-    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+    private val currentUserId = userRepository.getCurrentUserId()
 
     private val _userProfile = MutableLiveData<ResourceState<User>>()
     val userProfile: LiveData<ResourceState<User>> = _userProfile
@@ -32,8 +29,11 @@ class EditProfileViewModel(application: Application) : AndroidViewModel(applicat
     fun loadCurrentUser() {
         val uid = currentUserId ?: return
         _userProfile.value = ResourceState.Loading
+
         viewModelScope.launch(Dispatchers.IO) {
-            val user = userRepository.getUserProfile(uid)
+            userRepository.fetchAndCacheUser(uid)
+            val user = userRepository.getUserById(uid)
+
             if (user != null) {
                 loadedUser = user
                 _userProfile.postValue(ResourceState.Success(user))
@@ -54,17 +54,9 @@ class EditProfileViewModel(application: Application) : AndroidViewModel(applicat
 
         _updateState.value = ResourceState.Loading
         viewModelScope.launch(Dispatchers.IO) {
-            val success = userRepository.updateUserProfile(
-                uid = uid,
-                newUsername = newUsername,
-                newImageUri = newImageUri,
-                currentPhotoUrl = oldUser.photoUrl
-            )
-            if (success) {
-                _updateState.postValue(ResourceState.Success(Unit))
-            } else {
-                _updateState.postValue(ResourceState.Error("Failed to update profile"))
-            }
+            val success = userRepository.updateUserProfile(uid, newUsername, newImageUri, oldUser.photoUrl)
+            if (success) _updateState.postValue(ResourceState.Success(Unit))
+            else _updateState.postValue(ResourceState.Error("Failed to update profile"))
         }
     }
 }
