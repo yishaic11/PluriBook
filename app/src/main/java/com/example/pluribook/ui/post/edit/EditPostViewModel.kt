@@ -2,11 +2,13 @@ package com.example.pluribook.ui.post.edit
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.pluribook.PluribookApplication
+import com.example.pluribook.TAG
 import com.example.pluribook.data.api.BookItem
 import com.example.pluribook.data.model.Post
 import com.example.pluribook.data.repository.PostRepository
@@ -36,8 +38,11 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             try {
                 val post = repository.fetchPost(postId)
-                if (post != null) _originalPost.postValue(ResourceState.Success(post))
-                else _originalPost.postValue(ResourceState.Error("Post not found"))
+                if (post != null) {
+                    _originalPost.postValue(ResourceState.Success(post))
+                } else {
+                    _originalPost.postValue(ResourceState.Error("Post not found"))
+                }
             } catch (e: Exception) {
                 _originalPost.postValue(ResourceState.Error(e.message ?: "An error occurred"))
             }
@@ -62,6 +67,17 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
         if (currentState !is ResourceState.Success) return
         val oldPost = currentState.data
 
+        val imageUrlToSave = if (selectedBook != null) {
+            defaultImageUrl ?: ""
+        } else {
+            oldPost.photoUrl
+        }
+
+        if (imageUri == null && imageUrlToSave.isEmpty()) {
+            _updateState.value = ResourceState.Error("You must upload a photo to save this post.")
+            return
+        }
+
         if (description.isBlank()) {
             _updateState.value = ResourceState.Error("Description cannot be empty.")
             return
@@ -75,20 +91,22 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
         val summary = book?.volumeInfo?.description ?: oldPost.bookSummary
         val rating = book?.volumeInfo?.averageRating ?: oldPost.bookRating
 
-        val imageUrlToSave = if (imageUri == null && book != null) {
-            defaultImageUrl ?: ""
-        } else if (imageUri == null) {
-            oldPost.photoUrl
-        } else {
-            defaultImageUrl ?: oldPost.photoUrl
-        }
-
         viewModelScope.launch {
             try {
-                val success = repository.updatePost(postId, imageUri, imageUrlToSave, description, title, author, summary, rating)
+                val success = repository.updatePost(
+                    postId,
+                    imageUri,
+                    imageUrlToSave,
+                    description,
+                    title,
+                    author,
+                    summary,
+                    rating
+                )
                 if (success) _updateState.value = ResourceState.Success(Unit)
                 else _updateState.value = ResourceState.Error("Failed to update post.")
             } catch (e: Exception) {
+                Log.e(TAG, "Error updating post", e)
                 _updateState.value = ResourceState.Error(e.message ?: "An error occurred")
             }
         }

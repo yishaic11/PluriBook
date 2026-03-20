@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -24,22 +23,25 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class ProfileFragment : Fragment(R.layout.fragment_profile) {
+open class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
-    private val profileViewModel: ProfileViewModel by viewModels()
+    protected val profileViewModel: ProfileViewModel by viewModels()
     private lateinit var adapter: ProfilePostAdapter
 
-    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-    private lateinit var targetProfileId: String
-
+    protected val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     private var pagingJob: Job? = null
     private var loadedCount = 0
+
+    protected open fun getTargetUserId(): String? = arguments?.getString("targetUserId")
+    protected open fun navigateToPostDetail(postId: String) {
+        val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailFragment(postId)
+        findNavController().navigate(action)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val passedUserId = arguments?.getString("targetUserId")
-        targetProfileId = passedUserId ?: currentUserId
+        val targetProfileId = getTargetUserId() ?: currentUserId
 
         val textUsername = view.findViewById<TextView>(R.id.text_username)
         val imageProfile = view.findViewById<ShapeableImageView>(R.id.image_profile_picture)
@@ -57,8 +59,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 }
             },
             onPostClick = { clickedPost ->
-                val bundle = Bundle().apply { putString("postId", clickedPost.id) }
-                findNavController().navigate(R.id.post_fragment, bundle)
+                navigateToPostDetail(clickedPost.id)
             }
         )
 
@@ -84,7 +85,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         } else {
             buttonBack.visibility = View.GONE
             btnEditProfile.setOnClickListener {
-                findNavController().navigate(R.id.action_profile_fragment_to_edit_profile_fragment)
+                val action = ProfileFragmentDirections.actionProfileFragmentToEditProfileFragment()
+                findNavController().navigate(action)
             }
         }
 
@@ -93,38 +95,22 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
-                    0 -> observeUserPosts()
-                    1 -> observeLikedPosts()
+                    0 -> observeUserPosts(targetProfileId)
+                    1 -> observeLikedPosts(targetProfileId)
                 }
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-                when (tab?.position) {
-                    0 -> observeUserPosts()
-                    1 -> observeLikedPosts()
-                }
-            }
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
 
         profileViewModel.userProfileState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is ResourceState.Loading -> centralProgress.visibility = View.VISIBLE
-                is ResourceState.Success -> {
-                    centralProgress.visibility = View.GONE
-                    val user = state.data
-                    textUsername.text = user.username
-
-                    if (user.photoUrl.isNotEmpty()) {
-                        Picasso.get().load(user.photoUrl)
-                            .placeholder(R.drawable.default_profile_photo)
-                            .fit().centerCrop().into(imageProfile)
-                    }
-                }
-
-                is ResourceState.Error -> {
-                    centralProgress.visibility = View.GONE
-                    Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
+            if (state is ResourceState.Success) {
+                val user = state.data
+                textUsername.text = user.username
+                if (user.photoUrl.isNotEmpty()) {
+                    Picasso.get().load(user.photoUrl).placeholder(R.drawable.default_profile_photo)
+                        .fit().centerCrop().into(imageProfile)
                 }
             }
         }
@@ -143,21 +129,21 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         profileViewModel.loadUserProfile(targetProfileId)
 
-        observeUserPosts()
+        observeUserPosts(targetProfileId)
     }
 
-    private fun observeUserPosts() {
+    private fun observeUserPosts(targetId: String) {
         pagingJob?.cancel()
         pagingJob = viewLifecycleOwner.lifecycleScope.launch {
-            profileViewModel.getPostsFlow(targetProfileId).collectLatest { pagingData ->
+            profileViewModel.getPostsFlow(targetId).collectLatest { pagingData ->
                 loadedCount = 0
                 adapter.submitData(pagingData)
             }
         }
-        profileViewModel.refreshUserPosts(targetProfileId)
+        profileViewModel.refreshUserPosts(targetId)
     }
 
-    private fun observeLikedPosts() {
-        profileViewModel.refreshLikedPosts(targetProfileId)
+    private fun observeLikedPosts(targetId: String) {
+        profileViewModel.refreshLikedPosts(targetId)
     }
 }

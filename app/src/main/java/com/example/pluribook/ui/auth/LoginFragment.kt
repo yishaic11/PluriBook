@@ -36,12 +36,15 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
 
         textViewGoToSignup.setOnClickListener {
-            findNavController().navigate(R.id.action_loginFragment_to_signUpFragment)
+            val action = LoginFragmentDirections.actionLoginFragmentToSignUpFragment()
+            findNavController().navigate(action)
         }
 
         viewModel.authState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
+                    editTextEmail.isEnabled = false
+                    editTextPassword.isEnabled = false
                     buttonLogin.isEnabled = false
                     buttonLogin.setText(R.string.loading_logging_in)
                 }
@@ -51,10 +54,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     buttonLogin.setText(R.string.login_button)
                     Toast.makeText(requireContext(), "Welcome back!", Toast.LENGTH_SHORT).show()
 
-                    findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+                    val action = LoginFragmentDirections.actionLoginFragmentToHomeFragment()
+                    findNavController().navigate(action)
                 }
 
                 is ResourceState.Error -> {
+                    editTextEmail.isEnabled = true
+                    editTextPassword.isEnabled = true
                     buttonLogin.isEnabled = true
                     buttonLogin.setText(R.string.login_button)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()

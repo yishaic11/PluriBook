@@ -67,7 +67,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
         val textSelectedAuthor = view.findViewById<TextView>(R.id.text_selected_book_author)
         val textSelectedRating = view.findViewById<TextView>(R.id.text_selected_book_rating)
         val textSelectedSummary = view.findViewById<TextView>(R.id.text_selected_book_summary)
-        val scrollSummary = view.findViewById<View>(R.id.scroll_selected_summary)
+        val scrollSummary = view.findViewById<View>(R.id.scroll_create_post_summary)
 
         layoutBookSearch.setEndIconOnClickListener {
             val query = editTextBookSearch.text.toString()
@@ -138,7 +138,8 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
                                 Picasso.get().load(thumbUrl).into(imageView)
                             } else {
                                 createPostViewModel.defaultImageUrl = null
-                                imageView.setImageResource(R.drawable.create_post_image_upload_icon)
+                                imageView.setImageResource(0)
+
                             }
                         }.show()
                 }
@@ -181,7 +182,9 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
                         R.string.create_post_success_toast_text,
                         Toast.LENGTH_SHORT
                     ).show()
-                    findNavController().navigate(R.id.home_fragment)
+
+                    val action = CreatePostFragmentDirections.actionCreatePostToHome()
+                    findNavController().navigate(action)
                 }
 
                 is ResourceState.Error -> {
@@ -195,6 +198,7 @@ class CreatePostFragment : Fragment(R.layout.fragment_create_post) {
 
     private fun displaySelectedImage(uri: Uri) {
         imageView.setImageURI(uri)
+        imageView.colorFilter = null
     }
 
     private fun getBitmapUri(bitmap: Bitmap): Uri {
