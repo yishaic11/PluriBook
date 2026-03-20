@@ -8,9 +8,9 @@ import java.util.UUID
 data class Post(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
-    val photoUrl: String,
-    val description: String,
-    val senderId: String,
+    val photoUrl: String = "",
+    val description: String = "",
+    val senderId: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val likedBy: List<String> = emptyList(),
     // Book details from Google Books API
