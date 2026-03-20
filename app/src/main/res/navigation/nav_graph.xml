@@ -83,7 +83,16 @@
         <action
             android:id="@+id/action_profileFragment_to_postDetailFragment"
             app:destination="@id/post_fragment" />
+        <action
+            android:id="@+id/action_profile_fragment_to_edit_profile_fragment"
+            app:destination="@id/edit_profile_fragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/edit_profile_fragment"
+        android:name="com.example.pluribook.ui.profile.edit.EditProfileFragment"
+        android:label="@string/edit_profile_header"
+        tools:layout="@layout/fragment_edit_profile" />
 
     <fragment
         android:id="@+id/post_fragment"
@@ -120,7 +129,7 @@
     <fragment
         android:id="@+id/edit_post_fragment"
         android:name="com.example.pluribook.ui.post.edit.EditPostFragment"
-        android:label="Edit Post"
+        android:label="@string/edit_post_header"
         tools:layout="@layout/fragment_edit_post">
     </fragment>
 

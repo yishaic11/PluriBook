@@ -94,4 +94,44 @@ class UserRepository(
             null
         }
     }
+
+    suspend fun updateUserProfile(
+        uid: String,
+        newUsername: String,
+        newImageUri: Uri?,
+        currentPhotoUrl: String
+    ): Boolean {
+        return try {
+            var photoUrlToSave = currentPhotoUrl
+            if (newImageUri != null) {
+                val imageRef = storage.reference.child("$PROFILE_IMAGES_FOLDER/$uid.jpg")
+                imageRef.putFile(newImageUri).await()
+                photoUrlToSave = imageRef.downloadUrl.await().toString()
+            }
+
+            val profileUpdates = userProfileChangeRequest {
+                displayName = newUsername
+                if (newImageUri != null) photoUri = Uri.parse(photoUrlToSave)
+            }
+            auth.currentUser?.updateProfile(profileUpdates)?.await()
+
+            firestore.collection(USERS_COLLECTION).document(uid)
+                .update(
+                    mapOf(
+                        "username" to newUsername,
+                        "photoUrl" to photoUrlToSave
+                    )
+                ).await()
+
+            val localUser = userDao.getUserByUid(uid)
+            if (localUser != null) {
+                userDao.saveUser(localUser.copy(username = newUsername, photoUrl = photoUrlToSave))
+            }
+
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating profile for uid $uid", e)
+            false
+        }
+    }
 }
