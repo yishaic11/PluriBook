@@ -88,6 +88,18 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
 
     fun updatePost(postId: String, imageUri: Uri?, description: String) {
         val oldPost = loadedPostData ?: return
+
+        val potentialImageUrl = if (selectedBook != null) {
+            defaultImageUrl ?: ""
+        } else {
+            oldPost.photoUrl
+        }
+
+        if (imageUri == null && potentialImageUrl.isEmpty()) {
+            _updateState.value = ResourceState.Error("You must upload a photo to save this post.")
+            return
+        }
+
         if (description.isBlank()) {
             _updateState.value = ResourceState.Error("Description cannot be empty.")
             return
@@ -101,20 +113,12 @@ class EditPostViewModel(application: Application) : AndroidViewModel(application
         val summary = book?.volumeInfo?.description ?: oldPost.bookSummary
         val rating = book?.volumeInfo?.averageRating ?: oldPost.bookRating
 
-        val imageUrlToSave = if (imageUri == null && book != null) {
-            defaultImageUrl ?: ""
-        } else if (imageUri == null) {
-            oldPost.photoUrl
-        } else {
-            defaultImageUrl ?: oldPost.photoUrl
-        }
-
         viewModelScope.launch {
             try {
                 val success = repository.updatePost(
                     postId,
                     imageUri,
-                    imageUrlToSave,
+                    potentialImageUrl,
                     description,
                     title,
                     author,

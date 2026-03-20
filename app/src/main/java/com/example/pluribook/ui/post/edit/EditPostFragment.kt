@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.pluribook.R
 import com.example.pluribook.data.model.Post
 import com.example.pluribook.utils.ResourceState
@@ -31,7 +32,8 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
     private var selectedImageUri: Uri? = null
     private lateinit var imageView: ImageView
     private val editPostViewModel: EditPostViewModel by viewModels()
-    private var postId: String? = null
+
+    private val args: EditPostFragmentArgs by navArgs()
 
     private var isDataPopulated = false
 
@@ -55,8 +57,6 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        postId = arguments?.getString("postId")
-
         val layoutPostForm = view.findViewById<LinearLayout>(R.id.layout_post_form)
         val imageCard =
             view.findViewById<MaterialCardView>(R.id.edit_post_material_card_view_post_image)
@@ -79,10 +79,10 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
             view.findViewById<TextView>(R.id.edit_post_text_selected_book_rating)
         val textSelectedSummary =
             view.findViewById<TextView>(R.id.edit_post_text_selected_book_summary)
-        val scrollSummary = view.findViewById<View>(R.id.edit_post_scroll_selected_summary)
+        val scrollSummary = view.findViewById<View>(R.id.scroll_edit_post_summary)
 
-        if (postId != null && !isDataPopulated) {
-            editPostViewModel.loadPost(postId!!)
+        if (!isDataPopulated) {
+            editPostViewModel.loadPost(args.postId)
         }
 
         editPostViewModel.originalPost.observe(viewLifecycleOwner) { state ->
@@ -191,7 +191,7 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
                                 Picasso.get().load(thumbUrl).into(imageView)
                             } else {
                                 editPostViewModel.defaultImageUrl = null
-                                imageView.setImageResource(R.drawable.create_post_image_upload_icon)
+                                imageView.setImageResource(0)
                             }
                         }.show()
                 }
@@ -216,10 +216,8 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
         btnCancel.setOnClickListener { findNavController().navigateUp() }
 
         btnSave.setOnClickListener {
-            postId?.let { id ->
-                val description = descriptionEditText.text.toString().trim()
-                editPostViewModel.updatePost(id, selectedImageUri, description)
-            }
+            val description = descriptionEditText.text.toString().trim()
+            editPostViewModel.updatePost(args.postId, selectedImageUri, description)
         }
 
         editPostViewModel.updateState.observe(viewLifecycleOwner) { state ->
@@ -245,6 +243,7 @@ class EditPostFragment : Fragment(R.layout.fragment_edit_post) {
 
     private fun displaySelectedImage(uri: Uri) {
         imageView.setImageURI(uri)
+        imageView.colorFilter = null
     }
 
     private fun getBitmapUri(bitmap: Bitmap): Uri {

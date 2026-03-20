@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
                     userDao.saveUser(updatedUser)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error syncing current user  with $uid to local database")
+                Log.e(TAG, "Error syncing current user with $uid to local database")
                 e.printStackTrace()
             }
         }

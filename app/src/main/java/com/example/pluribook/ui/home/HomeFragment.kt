@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
@@ -42,7 +43,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     database.clearAllTables()
                 }
                 FirebaseAuth.getInstance().signOut()
-                findNavController().navigate(R.id.login_fragment)
+
+                val navOptions = NavOptions.Builder()
+                    .setPopUpTo(R.id.home_fragment, true)
+                    .build()
+
+                findNavController().navigate(R.id.login_fragment, null, navOptions)
             }
         }
 
@@ -55,8 +61,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             },
             onPostClick = { clickedPost ->
                 viewModel.savePostToLocal(clickedPost)
-                val bundle = Bundle().apply { putString("postId", clickedPost.id) }
-                findNavController().navigate(R.id.action_home_fragment_to_post_fragment, bundle)
+
+                val action = HomeFragmentDirections.actionHomeFragmentToPostFragment(clickedPost.id)
+                findNavController().navigate(action)
             }
         )
 

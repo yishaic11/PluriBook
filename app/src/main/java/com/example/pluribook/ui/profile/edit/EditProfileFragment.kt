@@ -63,7 +63,11 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
             pickImageLauncher.launch("image/*")
         }
 
-        btnCancel.setOnClickListener { findNavController().navigateUp() }
+        btnCancel.setOnClickListener {
+            val action =
+                EditProfileFragmentDirections.actionEditProfileFragmentToProfileFragment(null)
+            findNavController().navigate(action)
+        }
 
         btnSave.setOnClickListener {
             val newName = editUsername.text.toString().trim()
@@ -79,7 +83,12 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
                 is ResourceState.Success -> {
                     Toast.makeText(requireContext(), "Profile updated!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
+
+                    val action =
+                        EditProfileFragmentDirections.actionEditProfileFragmentToProfileFragment(
+                            null
+                        )
+                    findNavController().navigate(action)
                 }
 
                 is ResourceState.Error -> {

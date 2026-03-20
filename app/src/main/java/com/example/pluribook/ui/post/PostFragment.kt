@@ -14,16 +14,22 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.pluribook.R
 import com.example.pluribook.data.model.Post
 import com.example.pluribook.utils.ResourceState
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 
 class PostFragment : Fragment(R.layout.fragment_post) {
 
-    private val viewModel: PostViewModel by viewModels()
+    private val postViewModel: PostViewModel by viewModels()
+
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+    private val args: PostFragmentArgs by navArgs()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -51,23 +57,22 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         val textBookSummary = view.findViewById<TextView>(R.id.text_book_summary)
         val scrollSummary = view.findViewById<View>(R.id.scroll_book_summary)
 
-        val postId = arguments?.getString("postId")
-        if (postId != null) {
-            viewModel.loadPost(postId)
+        val postId = args.postId
 
-            viewModel.getCommentCount(postId).observe(viewLifecycleOwner) { count ->
-                textViewAllComments.text =
-                    if (count > 0) "View all $count comments" else "Be the first to comment!"
-            }
+        postViewModel.loadPost(postId)
+
+        postViewModel.getCommentCount(postId).observe(viewLifecycleOwner) { count ->
+            textViewAllComments.text =
+                if (count > 0) "View all $count comments" else "Be the first to comment!"
         }
 
         buttonBack.setOnClickListener { findNavController().navigateUp() }
 
-        viewModel.senderName.observe(viewLifecycleOwner) { name ->
+        postViewModel.senderName.observe(viewLifecycleOwner) { name ->
             textSenderName.text = name
         }
 
-        viewModel.senderPhotoUrl.observe(viewLifecycleOwner) { photoUrl ->
+        postViewModel.senderPhotoUrl.observe(viewLifecycleOwner) { photoUrl ->
             if (photoUrl.isNotEmpty()) {
                 Picasso.get()
                     .load(photoUrl)
@@ -81,7 +86,7 @@ class PostFragment : Fragment(R.layout.fragment_post) {
             }
         }
 
-        viewModel.postState.observe(viewLifecycleOwner) { state ->
+        postViewModel.postState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
                     progressBar.visibility = View.VISIBLE
@@ -114,7 +119,7 @@ class PostFragment : Fragment(R.layout.fragment_post) {
                         scrollView.visibility = View.VISIBLE
                     }
 
-                    val isLiked = post.likedBy.contains(viewModel.currentUserId)
+                    val isLiked = post.likedBy.contains(postViewModel.currentUserId)
                     if (isLiked) {
                         buttonLike.setImageResource(R.drawable.ic_heart_filled)
                         buttonLike.colorFilter = null
@@ -151,15 +156,19 @@ class PostFragment : Fragment(R.layout.fragment_post) {
                         scrollSummary.visibility = View.VISIBLE
                         textBookSummary.text = post.bookSummary
                     }
-                    val navigateToProfile = View.OnClickListener {
-                        val bundle = Bundle().apply {
-                            putString("targetUserId", post.senderId)
-                        }
 
-                        if (post.senderId == viewModel.currentUserId) {
-                            findNavController().navigate(R.id.profile_fragment, bundle)
+
+                    val navigateToProfile = View.OnClickListener {
+                        if (post.senderId == postViewModel.currentUserId) {
+
+                            val action =
+                                PostFragmentDirections.actionPostFragmentToProfileFragment(post.senderId)
+                            findNavController().navigate(action)
                         } else {
-                            findNavController().navigate(R.id.other_profile_fragment, bundle)
+
+                            val action =
+                                PostFragmentDirections.actionPostFragmentToOtherProfileFragment(post.senderId)
+                            findNavController().navigate(action)
                         }
                     }
 
@@ -176,45 +185,41 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         }
 
         buttonLike.setOnClickListener {
-            if (postId != null) viewModel.toggleLike(postId)
+            postViewModel.toggleLike(postId)
         }
 
         val openComments = View.OnClickListener {
-            val bundle = Bundle().apply { putString("postId", postId) }
-            findNavController().navigate(R.id.action_post_fragment_to_comment_fragment, bundle)
+            val action = PostFragmentDirections.actionPostFragmentToCommentFragment(postId)
+            findNavController().navigate(action)
         }
 
         buttonComment.setOnClickListener(openComments)
         textViewAllComments.setOnClickListener(openComments)
 
-        viewModel.isOwner.observe(viewLifecycleOwner) { isOwner ->
+        postViewModel.isOwner.observe(viewLifecycleOwner) { isOwner ->
             buttonPostOptions.visibility = if (isOwner) View.VISIBLE else View.GONE
         }
 
         buttonPostOptions.setOnClickListener { showBottomSheetMenu(postId) }
     }
 
-    private fun showBottomSheetMenu(postId: String?) {
+    private fun showBottomSheetMenu(postId: String) {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         bottomSheetDialog.setContentView(R.layout.bottom_sheet_post_options)
 
         val textEdit = bottomSheetDialog.findViewById<TextView>(R.id.text_edit_post)
         textEdit?.setOnClickListener {
             bottomSheetDialog.dismiss()
-            if (postId != null) {
-                val bundle = bundleOf("postId" to postId)
-                findNavController().navigate(R.id.edit_post_fragment, bundle)
-            }
+            val action = PostFragmentDirections.actionPostFragmentToEditPostFragment(postId)
+            findNavController().navigate(action)
         }
 
         val textDelete = bottomSheetDialog.findViewById<TextView>(R.id.text_delete_post)
         textDelete?.setOnClickListener {
             bottomSheetDialog.dismiss()
-            if (postId != null) {
-                viewModel.deletePost(postId)
-                setFragmentResult("post_request", bundleOf("post_deleted" to true))
-                findNavController().navigateUp()
-            }
+            postViewModel.deletePost(postId)
+            setFragmentResult("post_request", bundleOf("post_deleted" to true))
+            findNavController().navigateUp()
         }
 
         bottomSheetDialog.show()

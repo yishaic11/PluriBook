@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,11 +23,12 @@ class CommentFragment : Fragment(R.layout.fragment_comment) {
 
     private val viewModel: CommentViewModel by viewModels()
     private lateinit var adapter: CommentAdapter
+    private val args: CommentFragmentArgs by navArgs()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val postId = arguments?.getString("postId") ?: return
+        val postId = args.postId
 
         val buttonBack = view.findViewById<ImageButton>(R.id.image_button_back_comments)
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_bar_comments)

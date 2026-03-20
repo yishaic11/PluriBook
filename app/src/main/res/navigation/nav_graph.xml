@@ -83,7 +83,8 @@
         <argument
             android:name="targetUserId"
             android:defaultValue="@null"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="true" />
 
         <action
             android:id="@+id/action_profile_fragment_to_home_fragment"
@@ -142,6 +143,10 @@
         <action
             android:id="@+id/action_post_fragment_to_other_profile_fragment"
             app:destination="@id/other_profile_fragment" />
+
+        <action
+            android:id="@+id/action_post_fragment_to_home_fragment"
+            app:destination="@id/home_fragment" />
     </fragment>
 
     <fragment
@@ -153,6 +158,10 @@
         <argument
             android:name="postId"
             app:argType="string" />
+
+        <action
+            android:id="@+id/action_comment_fragment_to_post_fragment"
+            app:destination="@id/post_fragment" />
     </fragment>
 
     <fragment
