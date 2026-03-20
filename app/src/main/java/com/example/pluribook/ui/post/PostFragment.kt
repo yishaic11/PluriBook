@@ -20,7 +20,6 @@ import com.example.pluribook.data.model.Post
 import com.example.pluribook.utils.ResourceState
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.imageview.ShapeableImageView
-import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 
 class PostFragment : Fragment(R.layout.fragment_post) {
@@ -84,11 +83,35 @@ class PostFragment : Fragment(R.layout.fragment_post) {
             }
         }
 
-        postViewModel.postState.observe(viewLifecycleOwner) { state ->
+        postViewModel.deleteState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
                     progressBar.visibility = View.VISIBLE
-                    scrollView.visibility = View.GONE
+                    scrollView.alpha = 0.5f
+                    buttonPostOptions.isEnabled = false
+                }
+                is ResourceState.Success -> {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Post deleted successfully", Toast.LENGTH_SHORT).show()
+                    setFragmentResult("post_request", bundleOf("post_deleted" to true))
+                    findNavController().navigateUp()
+                }
+                is ResourceState.Error -> {
+                    progressBar.visibility = View.GONE
+                    scrollView.alpha = 1.0f
+                    buttonPostOptions.isEnabled = true
+                    Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        postViewModel.postState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is ResourceState.Loading -> {
+                    if (postViewModel.deleteState.value !is ResourceState.Loading) {
+                        progressBar.visibility = View.VISIBLE
+                        scrollView.visibility = View.GONE
+                    }
                 }
 
                 is ResourceState.Success -> {
@@ -216,8 +239,6 @@ class PostFragment : Fragment(R.layout.fragment_post) {
         textDelete?.setOnClickListener {
             bottomSheetDialog.dismiss()
             postViewModel.deletePost(postId)
-            setFragmentResult("post_request", bundleOf("post_deleted" to true))
-            findNavController().navigateUp()
         }
 
         bottomSheetDialog.show()

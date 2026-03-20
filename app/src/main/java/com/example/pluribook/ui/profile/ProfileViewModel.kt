@@ -18,7 +18,9 @@ import kotlinx.coroutines.launch
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application as PluribookApplication
-    private val repository = PostRepository(app.database.postDao(), app.database.userDao())
+    private val postDao = app.database.postDao()
+    private val userDao = app.database.userDao()
+    private val repository = PostRepository(postDao, userDao)
     val userRepository = UserRepository(app.database.userDao())
 
     private val _userProfileState = MutableLiveData<ResourceState<User>>()

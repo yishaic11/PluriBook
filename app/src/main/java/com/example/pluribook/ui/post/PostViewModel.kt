@@ -17,14 +17,21 @@ import kotlinx.coroutines.withContext
 class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application as PluribookApplication
-    private val userRepository = UserRepository(app.database.userDao())
-    private val postRepository = PostRepository(app.database.postDao(), app.database.userDao())
-    private val commentRepository = CommentRepository(app.database.commentDao())
+
+    private val postDao = app.database.postDao()
+    private val userDao = app.database.userDao()
+    private val commentDao = app.database.commentDao()
+    private val userRepository = UserRepository(userDao)
+    private val postRepository = PostRepository(postDao, userDao)
+    private val commentRepository = CommentRepository(commentDao)
 
     val currentUserId = userRepository.getCurrentUserId()
 
     private val _postState = MutableLiveData<ResourceState<Post>>()
     val postState: LiveData<ResourceState<Post>> = _postState
+
+    private val _deleteState = MutableLiveData<ResourceState<Unit>>()
+    val deleteState: LiveData<ResourceState<Unit>> = _deleteState
 
     private val _senderName = MutableLiveData<String>()
     val senderName: LiveData<String> = _senderName
@@ -88,12 +95,29 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             val isLiked = post.likedBy.contains(uid)
             val newLikedBy = if (isLiked) post.likedBy - uid else post.likedBy + uid
             _postState.value = ResourceState.Success(post.copy(likedBy = newLikedBy))
-            viewModelScope.launch(Dispatchers.IO) { postRepository.toggleLike(postId, uid, isLiked) }
+            viewModelScope.launch(Dispatchers.IO) {
+                postRepository.toggleLike(
+                    postId,
+                    uid,
+                    isLiked
+                )
+            }
         }
     }
 
     fun deletePost(postId: String) {
-        viewModelScope.launch(Dispatchers.IO) { postRepository.deletePost(postId) }
+        _deleteState.value = ResourceState.Loading
+        viewModelScope.launch(Dispatchers.IO) {
+            val success = postRepository.deletePost(postId)
+            withContext(Dispatchers.Main) {
+                if (success) {
+                    _deleteState.value = ResourceState.Success(Unit)
+                } else {
+                    _deleteState.value =
+                        ResourceState.Error("Failed to delete post. Please try again.")
+                }
+            }
+        }
     }
 
     override fun onCleared() {

@@ -15,7 +15,10 @@ import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = UserRepository((application as PluribookApplication).database.userDao())
+    private val app = application as PluribookApplication
+    private val userDao = app.database.userDao()
+
+    private val repository = UserRepository(userDao)
 
     private val _authState = MutableLiveData<ResourceState<FirebaseUser?>>()
     val authState: LiveData<ResourceState<FirebaseUser?>> = _authState

@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 
 class EditProfileViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val userRepository = UserRepository((application as PluribookApplication).database.userDao())
+    private val app = application as PluribookApplication
+    private val userDao = app.database.userDao()
+    private val userRepository = UserRepository(userDao)
 
     private val currentUserId = userRepository.getCurrentUserId()
 

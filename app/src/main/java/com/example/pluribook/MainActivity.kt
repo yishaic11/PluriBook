@@ -1,24 +1,20 @@
 package com.example.pluribook
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
-import com.example.pluribook.data.model.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class MainActivity : AppCompatActivity() {
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -41,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
         if (currentUser != null) {
             navGraph.setStartDestination(R.id.home_fragment)
-            syncCurrentUserToRoom(currentUser.uid)
+            viewModel.syncCurrentUser(currentUser.uid)
         } else {
             navGraph.setStartDestination(R.id.login_fragment)
         }
@@ -82,36 +78,6 @@ class MainActivity : AppCompatActivity() {
                 destination.id == R.id.profile_fragment
             ) {
                 bottomNavigationView.menu.findItem(destination.id)?.isChecked = true
-            }
-        }
-    }
-
-    private fun syncCurrentUserToRoom(uid: String) {
-        val db = FirebaseFirestore.getInstance()
-        val userDao = (application as PluribookApplication).database.userDao()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val document = db.collection("users").document(uid).get().await()
-
-                if (document.exists()) {
-                    val likedPosts = (document.get("likedPosts") as? List<*>)
-                        ?.filterIsInstance<String>()
-                        ?: emptyList()
-
-                    val updatedUser = User(
-                        uid = uid,
-                        email = document.getString("email") ?: "",
-                        username = document.getString("username") ?: "Unknown",
-                        photoUrl = document.getString("photoUrl") ?: "",
-                        likedPosts = likedPosts
-                    )
-
-                    userDao.saveUser(updatedUser)
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error syncing current user with $uid to local database")
-                e.printStackTrace()
             }
         }
     }

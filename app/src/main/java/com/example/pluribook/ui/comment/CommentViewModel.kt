@@ -19,10 +19,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class CommentViewModel(application: Application) : AndroidViewModel(application) {
-    private val commentDao = (application as PluribookApplication).database.commentDao()
+    private val app = application as PluribookApplication
+    private val commentDao = app.database.commentDao()
     private val repository = CommentRepository(commentDao)
-    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     private var currentUserName = "Unknown"
     private var currentUserPhoto = ""
 
