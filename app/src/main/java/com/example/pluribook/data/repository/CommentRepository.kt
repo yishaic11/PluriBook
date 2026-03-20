@@ -27,7 +27,6 @@ class CommentRepository(
     }
 
     private var commentListener: ListenerRegistration? = null
-
     private val commentsCollection = firestore.collection(COMMENTS_COLLECTION)
 
     private fun getPostCommentsQuery(postId: String) =
@@ -38,6 +37,10 @@ class CommentRepository(
             config = PagingConfig(pageSize = PAGE_SIZE, enablePlaceholders = false),
             pagingSourceFactory = { commentDao.getPagedComments(postId) }
         ).flow
+    }
+
+    fun getCommentStreamCount(postId: String): Flow<Int> {
+        return commentDao.getCommentCount(postId)
     }
 
     fun syncComments(postId: String) {
@@ -51,9 +54,9 @@ class CommentRepository(
 
             snapshot?.let {
                 CoroutineScope(Dispatchers.IO).launch {
-                    for (documentChange in it.documentChanges) {
-                        val comment = documentChange.document.toObject(Comment::class.java)
-                        when (documentChange.type) {
+                    for (dc in it.documentChanges) {
+                        val comment = dc.document.toObject(Comment::class.java)
+                        when (dc.type) {
                             DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
                                 commentDao.insertComment(comment)
                             }
@@ -76,7 +79,6 @@ class CommentRepository(
         return try {
             commentsCollection.document(comment.id).set(comment).await()
             commentDao.insertComment(comment)
-
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error creating comment: ${e.message}", e)
@@ -84,7 +86,7 @@ class CommentRepository(
         }
     }
 
-    suspend fun deleteComment(postId: String, commentId: String) {
+    suspend fun deleteComment(commentId: String) {
         try {
             commentsCollection.document(commentId).delete().await()
             commentDao.deleteComment(commentId)

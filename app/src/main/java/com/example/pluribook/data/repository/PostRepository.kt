@@ -6,6 +6,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.pluribook.TAG
+import com.example.pluribook.data.api.BookItem
+import com.example.pluribook.data.api.BookNetworkClient
 import com.example.pluribook.data.local.PostDao
 import com.example.pluribook.data.local.UserDao
 import com.example.pluribook.data.model.Post
@@ -14,10 +16,15 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import retrofit2.await
 import java.util.UUID
 
 class PostRepository(
@@ -59,37 +66,34 @@ class PostRepository(
         ).flow
     }
 
-    suspend fun syncPostsFromFirebase(isRefresh: Boolean = false) {
-        if (isFetching || (isEndOfList && !isRefresh)) return
-        isFetching = true
+    fun getPostByIdStream(postId: String): Flow<Post?> = postDao.getPostFlowById(postId)
 
-        try {
-            var query = firestore.collection(POSTS_COLLECTION)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(PAGE_SIZE.toLong())
-
-            if (isRefresh) {
-                lastVisibleDoc = null
-                isEndOfList = false
-            } else {
-                lastVisibleDoc?.let { query = query.startAfter(it) }
+    fun startRealtimePostSync(postId: String): ListenerRegistration {
+        return firestore.collection(POSTS_COLLECTION).document(postId)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) return@addSnapshotListener
+                snapshot?.toObject(Post::class.java)?.let { post ->
+                    CoroutineScope(Dispatchers.IO).launch { postDao.insertPost(post) }
+                }
             }
+    }
 
-            val snapshot = query.get().await()
-
-            if (snapshot.isEmpty) {
-                isEndOfList = true
-            } else {
-                lastVisibleDoc = snapshot.documents.lastOrNull()
-                val posts = snapshot.toObjects(Post::class.java)
-
-                if (isRefresh) postDao.clearAllPosts()
-                postDao.insertPosts(posts)
-            }
+    suspend fun searchBooks(query: String): List<BookItem> {
+        return try {
+            val response = BookNetworkClient.bookApi.fetchBooks(query).await()
+            response.items ?: emptyList()
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching from Firebase", e)
-        } finally {
-            isFetching = false
+            Log.e(TAG, "Search books network error", e)
+            emptyList()
+        }
+    }
+
+    suspend fun fetchAndCachePost(postId: String) {
+        try {
+            val document = firestore.collection(POSTS_COLLECTION).document(postId).get().await()
+            document.toObject(Post::class.java)?.let { postDao.insertPost(it) }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching post $postId", e)
         }
     }
 
@@ -97,16 +101,16 @@ class PostRepository(
         imageUri: Uri?,
         defaultImageUrl: String?,
         description: String,
-        title: String,
-        author: String,
-        summary: String,
-        rating: Double
+        bookTitle: String,
+        bookAuthor: String,
+        bookSummary: String,
+        bookRating: Double
     ): Boolean {
         return try {
             val postId = UUID.randomUUID().toString()
             val userId = auth.currentUser?.uid ?: throw Exception("User not logged in")
 
-            val downloadUrl = if (imageUri != null) {
+            val finalPhotoUrl = if (imageUri != null) {
                 val storageRef = storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg")
                 storageRef.putFile(imageUri).await()
                 storageRef.downloadUrl.await().toString()
@@ -116,139 +120,92 @@ class PostRepository(
 
             val newPost = Post(
                 id = postId,
-                photoUrl = downloadUrl,
+                photoUrl = finalPhotoUrl,
                 description = description,
                 senderId = userId,
-                bookTitle = title,
-                bookAuthor = author,
-                bookSummary = summary,
-                bookRating = rating
+                bookTitle = bookTitle,
+                bookAuthor = bookAuthor,
+                bookSummary = bookSummary,
+                bookRating = bookRating
             )
 
             firestore.collection(POSTS_COLLECTION).document(postId).set(newPost).await()
             postDao.insertPost(newPost)
-
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error creating post")
-            e.printStackTrace()
+            Log.e(TAG, "Create post failed", e)
             false
-        }
-    }
-
-    suspend fun syncUserPosts(senderId: String) {
-        try {
-            val documents = firestore.collection(POSTS_COLLECTION)
-                .whereEqualTo("senderId", senderId)
-                .get()
-                .await()
-
-            val posts = documents.toObjects(Post::class.java)
-
-            if (posts.isNotEmpty()) {
-                postDao.insertPosts(posts)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching user posts for $senderId", e)
-        }
-    }
-
-    suspend fun syncAndGetLikedPostIds(userId: String): List<String> {
-        return try {
-            val userDocument =
-                firestore.collection(UserRepository.USERS_COLLECTION).document(userId).get().await()
-            val user = userDocument.toObject(User::class.java)
-            val likedPostIds = user?.likedPosts ?: emptyList()
-
-            if (likedPostIds.isEmpty()) return emptyList()
-
-            val allFetchedPosts = mutableListOf<Post>()
-
-            likedPostIds.chunked(PAGE_SIZE).forEach { chunk ->
-                val snapshot = firestore.collection(POSTS_COLLECTION)
-                    .whereIn("id", chunk)
-                    .get().await()
-                allFetchedPosts.addAll(snapshot.toObjects(Post::class.java))
-            }
-
-            postDao.insertPosts(allFetchedPosts)
-            if (user != null) userDao.saveUser(user)
-
-            likedPostIds
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching liked posts, falling back to local storage", e)
-
-            val localUser = userDao.getUserByUid(userId)
-            localUser?.likedPosts ?: emptyList()
         }
     }
 
     suspend fun updatePost(
-        postId: String,
-        imageUri: Uri?,
-        imageUrlToSave: String,
-        description: String,
-        title: String,
-        author: String,
-        summary: String,
-        rating: Double
+        postId: String, imageUri: Uri?, currentPhotoUrl: String, description: String,
+        bookTitle: String, bookAuthor: String, bookSummary: String, bookRating: Double
     ): Boolean {
         return try {
-            val finalPhotoUrl = if (imageUri != null) {
+            var finalPhotoUrl = currentPhotoUrl
+            if (imageUri != null) {
                 val storageRef = storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg")
                 storageRef.putFile(imageUri).await()
-                storageRef.downloadUrl.await().toString()
-            } else {
-                imageUrlToSave
+                finalPhotoUrl = storageRef.downloadUrl.await().toString()
             }
-
             val updates = mapOf(
-                "photoUrl" to finalPhotoUrl,
                 "description" to description,
-                "bookTitle" to title,
-                "bookAuthor" to author,
-                "bookSummary" to summary,
-                "bookRating" to rating
+                "photoUrl" to finalPhotoUrl,
+                "bookTitle" to bookTitle,
+                "bookAuthor" to bookAuthor,
+                "bookSummary" to bookSummary,
+                "bookRating" to bookRating
             )
             firestore.collection(POSTS_COLLECTION).document(postId).update(updates).await()
-
-            postDao.updatePost(
-                postId,
-                description,
-                finalPhotoUrl,
-                title,
-                author,
-                summary,
-                rating
-            )
-
+            postDao.updatePost(postId, description, finalPhotoUrl, bookTitle, bookAuthor, bookSummary, bookRating)
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating post", e)
+            Log.e(TAG, "Update post failed", e)
             false
         }
+    }
+
+    suspend fun fetchPost(postId: String): Post? {
+        return try {
+            val document = firestore.collection(POSTS_COLLECTION).document(postId).get().await()
+            val post = document.toObject(Post::class.java)
+            if (post != null) postDao.insertPost(post)
+            post
+        } catch (e: Exception) { null }
+    }
+
+    suspend fun syncPostsFromFirebase(isRefresh: Boolean = false) {
+        if (isFetching || (isEndOfList && !isRefresh)) return
+        isFetching = true
+        try {
+            var query = firestore.collection(POSTS_COLLECTION).orderBy("createdAt", Query.Direction.DESCENDING).limit(PAGE_SIZE.toLong())
+            if (isRefresh) { lastVisibleDoc = null; isEndOfList = false }
+            else { lastVisibleDoc?.let { query = query.startAfter(it) } }
+            val snapshot = query.get().await()
+            if (snapshot.isEmpty) { isEndOfList = true }
+            else {
+                lastVisibleDoc = snapshot.documents.lastOrNull()
+                val posts = snapshot.toObjects(Post::class.java)
+                if (isRefresh) postDao.clearAllPosts()
+                postDao.insertPosts(posts)
+            }
+        } finally { isFetching = false }
     }
 
     suspend fun toggleLike(postId: String, currentUserId: String, isCurrentlyLiked: Boolean) {
         val post = postDao.getPostById(postId)
         val user = userDao.getUserByUid(currentUserId)
-
         if (post != null) {
-            val newLikedBy =
-                if (isCurrentlyLiked) post.likedBy - currentUserId else post.likedBy + currentUserId
+            val newLikedBy = if (isCurrentlyLiked) post.likedBy - currentUserId else post.likedBy + currentUserId
             postDao.insertPost(post.copy(likedBy = newLikedBy))
         }
-
         if (user != null) {
-            val newUserLikes =
-                if (isCurrentlyLiked) user.likedPosts - postId else user.likedPosts + postId
+            val newUserLikes = if (isCurrentlyLiked) user.likedPosts - postId else user.likedPosts + postId
             userDao.saveUser(user.copy(likedPosts = newUserLikes))
         }
-
         val postRef = firestore.collection(POSTS_COLLECTION).document(postId)
         val userRef = firestore.collection(UserRepository.USERS_COLLECTION).document(currentUserId)
-
         if (isCurrentlyLiked) {
             postRef.update("likedBy", FieldValue.arrayRemove(currentUserId))
             userRef.update("likedPosts", FieldValue.arrayRemove(postId))
@@ -258,20 +215,26 @@ class PostRepository(
         }
     }
 
-    suspend fun deletePost(postId: String): Boolean {
-        return try {
-            try {
-                storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg").delete().await()
-            } catch (e: Exception) {
-                Log.w(TAG, "Image not found or already deleted: ${e.message}")
-            }
-            firestore.collection(POSTS_COLLECTION).document(postId).delete().await()
-            postDao.deletePost(postId)
+    suspend fun syncUserPosts(senderId: String) {
+        val documents = firestore.collection(POSTS_COLLECTION).whereEqualTo("senderId", senderId).get().await()
+        postDao.insertPosts(documents.toObjects(Post::class.java))
+    }
 
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Error deleting post: ${e.message}", e)
-            false
+    suspend fun syncAndGetLikedPostIds(userId: String): List<String> {
+        val userDocument = firestore.collection(UserRepository.USERS_COLLECTION).document(userId).get().await()
+        val likedPostIds = userDocument.toObject(User::class.java)?.likedPosts ?: emptyList()
+        if (likedPostIds.isNotEmpty()) {
+            likedPostIds.chunked(10).forEach { chunk ->
+                val snap = firestore.collection(POSTS_COLLECTION).whereIn("id", chunk).get().await()
+                postDao.insertPosts(snap.toObjects(Post::class.java))
+            }
         }
+        return likedPostIds
+    }
+
+    suspend fun deletePost(postId: String) {
+        try { storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg").delete().await() } catch (e: Exception) {}
+        firestore.collection(POSTS_COLLECTION).document(postId).delete().await()
+        postDao.deletePost(postId)
     }
 }

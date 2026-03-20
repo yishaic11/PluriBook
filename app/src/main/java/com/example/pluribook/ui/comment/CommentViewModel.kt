@@ -67,9 +67,9 @@ class CommentViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun deleteComment(postId: String, commentId: String) {
+    fun deleteComment(commentId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteComment(postId, commentId)
+            repository.deleteComment(commentId)
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.pluribook.data.model.Post
 import androidx.paging.PagingSource
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PostDao {
@@ -16,6 +17,12 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPosts(posts: List<Post>)
 
+    @Query("SELECT * FROM posts WHERE id = :postId")
+    suspend fun getPostById(postId: String): Post?
+
+    @Query("SELECT * FROM posts WHERE id = :postId")
+    fun getPostFlowById(postId: String): Flow<Post?>
+
     @Query("SELECT * FROM posts ORDER BY createdAt DESC")
     fun getPagedPosts(): PagingSource<Int, Post>
 
@@ -25,8 +32,7 @@ interface PostDao {
     @Query("SELECT * FROM posts WHERE id IN (:postIds) ORDER BY createdAt DESC")
     fun getPagedPostsByIds(postIds: List<String>): PagingSource<Int, Post>
 
-    @Query(
-        """
+    @Query("""
         UPDATE posts 
         SET 
             description = :description,
@@ -36,8 +42,7 @@ interface PostDao {
             bookSummary = :bookSummary,
             bookRating = :bookRating
         WHERE id = :postId
-    """
-    )
+    """)
     suspend fun updatePost(
         postId: String, description: String, photoUrl: String,
         bookTitle: String, bookAuthor: String, bookSummary: String, bookRating: Double
@@ -45,9 +50,6 @@ interface PostDao {
 
     @Query("DELETE FROM posts WHERE id = :postId")
     suspend fun deletePost(postId: String)
-
-    @Query("SELECT * FROM posts WHERE id = :id")
-    suspend fun getPostById(id: String): Post?
 
     @Query("DELETE FROM posts")
     suspend fun clearAllPosts()

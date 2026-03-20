@@ -6,15 +6,20 @@ import com.example.pluribook.TAG
 import com.example.pluribook.data.local.UserDao
 import com.example.pluribook.data.model.User
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class UserRepository(
     private val userDao: UserDao,
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
     private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 ) {
 
@@ -23,7 +28,28 @@ class UserRepository(
         const val USERS_COLLECTION = "users"
     }
 
-    fun getFirebaseAuth() = auth
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val usersCollection = firestore.collection(USERS_COLLECTION)
+
+    fun getCurrentUserId(): String? = auth.currentUser?.uid
+
+    suspend fun login(email: String, password: String): FirebaseUser? {
+        val result = auth.signInWithEmailAndPassword(email, password).await()
+        val user = result.user
+        if (user != null) {
+            fetchAndCacheUser(user.uid)
+        }
+        return user
+    }
+
+    suspend fun signup(email: String, password: String, username: String, imageUri: Uri): FirebaseUser? {
+        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        val firebaseUser = result.user
+        return if (firebaseUser != null) {
+            val success = registerUser(firebaseUser.uid, email, username, imageUri)
+            if (success) firebaseUser else null
+        } else null
+    }
 
     suspend fun registerUser(uid: String, email: String, username: String, imageUri: Uri): Boolean {
         return try {
@@ -37,70 +63,40 @@ class UserRepository(
             }
             auth.currentUser?.updateProfile(profileUpdates)?.await()
 
-            val newUser = User(
-                uid = uid,
-                email = email,
-                username = username,
-                photoUrl = downloadUrl,
-                likedPosts = emptyList()
-            )
-            firestore.collection("users").document(uid).set(newUser).await()
+            val user = User(uid = uid, email = email, username = username, photoUrl = downloadUrl)
 
-            userDao.saveUser(newUser)
-
+            usersCollection.document(uid).set(user).await()
+            userDao.saveUser(user)
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error registering user with uid $uid")
-            e.printStackTrace()
+            Log.e(TAG, "Error registering user", e)
             false
         }
     }
 
-    suspend fun syncUserToLocalDatabase(uid: String) {
+    fun getUserStream(uid: String): Flow<User?> = userDao.getUserFlowByUid(uid)
+
+    suspend fun getUserById(uid: String): User? = userDao.getUserByUid(uid)
+
+    fun startRealtimeUserSync(uid: String): ListenerRegistration {
+        return usersCollection.document(uid).addSnapshotListener { snapshot, e ->
+            if (e != null) return@addSnapshotListener
+            snapshot?.toObject(User::class.java)?.let { user ->
+                CoroutineScope(Dispatchers.IO).launch { userDao.saveUser(user) }
+            }
+        }
+    }
+
+    suspend fun fetchAndCacheUser(uid: String) {
         try {
-            val document = firestore.collection(USERS_COLLECTION).document(uid).get().await()
-            if (document.exists()) {
-                val likedPosts = (document.get("likedPosts") as? List<*>)
-                    ?.filterIsInstance<String>()
-                    ?: emptyList()
-
-                val user = User(
-                    uid = uid,
-                    email = document.getString("email") ?: "",
-                    username = document.getString("username") ?: "Unknown",
-                    photoUrl = document.getString("photoUrl") ?: "",
-                    likedPosts = likedPosts
-                )
-                userDao.saveUser(user)
-            }
+            val document = usersCollection.document(uid).get().await()
+            document.toObject(User::class.java)?.let { userDao.saveUser(it) }
         } catch (e: Exception) {
-            Log.e(TAG, "Error syncing user with uid $uid to local database")
-            e.printStackTrace()
+            Log.e(TAG, "Error caching user $uid", e)
         }
     }
 
-    suspend fun getUserProfile(uid: String): User? {
-        val localUser = userDao.getUserByUid(uid)
-        if (localUser != null) return localUser
-
-        return try {
-            val document = firestore.collection(USERS_COLLECTION).document(uid).get().await()
-            val remoteUser = document.toObject(User::class.java)
-            if (remoteUser != null) {
-                userDao.saveUser(remoteUser)
-            }
-            remoteUser
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun updateUserProfile(
-        uid: String,
-        newUsername: String,
-        newImageUri: Uri?,
-        currentPhotoUrl: String
-    ): Boolean {
+    suspend fun updateUserProfile(uid: String, newUsername: String, newImageUri: Uri?, currentPhotoUrl: String): Boolean {
         return try {
             var photoUrlToSave = currentPhotoUrl
             if (newImageUri != null) {
@@ -115,22 +111,14 @@ class UserRepository(
             }
             auth.currentUser?.updateProfile(profileUpdates)?.await()
 
-            firestore.collection(USERS_COLLECTION).document(uid)
-                .update(
-                    mapOf(
-                        "username" to newUsername,
-                        "photoUrl" to photoUrlToSave
-                    )
-                ).await()
+            usersCollection.document(uid).update(mapOf("username" to newUsername, "photoUrl" to photoUrlToSave)).await()
 
-            val localUser = userDao.getUserByUid(uid)
-            if (localUser != null) {
-                userDao.saveUser(localUser.copy(username = newUsername, photoUrl = photoUrlToSave))
+            userDao.getUserByUid(uid)?.let {
+                userDao.saveUser(it.copy(username = newUsername, photoUrl = photoUrlToSave))
             }
-
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating profile for uid $uid", e)
+            Log.e(TAG, "Error updating profile", e)
             false
         }
     }

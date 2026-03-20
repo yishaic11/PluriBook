@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.pluribook.data.model.User
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
@@ -14,6 +15,9 @@ interface UserDao {
 
     @Query("SELECT * FROM users WHERE uid = :uid")
     suspend fun getUserByUid(uid: String): User?
+
+    @Query("SELECT * FROM users WHERE uid = :uid")
+    fun getUserFlowByUid(uid: String): Flow<User?>
 
     @Query("DELETE FROM users")
     suspend fun clearAllUsers()
