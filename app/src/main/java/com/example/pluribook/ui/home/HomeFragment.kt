@@ -7,12 +7,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.pluribook.NavGraphDirections
 import com.example.pluribook.PluribookApplication
 import com.example.pluribook.R
 import com.google.android.material.button.MaterialButton
@@ -44,11 +44,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 }
                 FirebaseAuth.getInstance().signOut()
 
-                val navOptions = NavOptions.Builder()
-                    .setPopUpTo(R.id.home_fragment, true)
-                    .build()
-
-                findNavController().navigate(R.id.login_fragment, null, navOptions)
+                val action = NavGraphDirections.actionGlobalLoginFragment()
+                findNavController().navigate(action)
             }
         }
 
