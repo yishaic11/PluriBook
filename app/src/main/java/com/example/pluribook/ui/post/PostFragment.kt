@@ -16,7 +16,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.pluribook.R
 import com.example.pluribook.data.model.Post
-import com.example.pluribook.ui.comment.CommentViewModel
 import com.example.pluribook.utils.ResourceState
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.imageview.ShapeableImageView
