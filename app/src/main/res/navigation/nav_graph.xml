@@ -91,7 +91,7 @@
     <fragment
         android:id="@+id/edit_profile_fragment"
         android:name="com.example.pluribook.ui.profile.edit.EditProfileFragment"
-        android:label="Edit Profile"
+        android:label="@string/edit_profile_header"
         tools:layout="@layout/fragment_edit_profile" />
 
     <fragment
@@ -129,7 +129,7 @@
     <fragment
         android:id="@+id/edit_post_fragment"
         android:name="com.example.pluribook.ui.post.edit.EditPostFragment"
-        android:label="Edit Post"
+        android:label="@string/edit_post_header"
         tools:layout="@layout/fragment_edit_post">
     </fragment>
 

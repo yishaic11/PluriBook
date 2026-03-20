@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Edit Profile"
+        android:text="@string/edit_profile_header"
         android:textColor="@color/pluri_darkest"
         android:textSize="24sp"
         android:textStyle="bold"
