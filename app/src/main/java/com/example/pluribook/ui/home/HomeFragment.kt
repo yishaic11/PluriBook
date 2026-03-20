@@ -12,6 +12,7 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.pluribook.NavGraphDirections
 import com.example.pluribook.PluribookApplication
 import com.example.pluribook.R
 import com.google.android.material.button.MaterialButton
@@ -42,7 +43,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     database.clearAllTables()
                 }
                 FirebaseAuth.getInstance().signOut()
-                findNavController().navigate(R.id.login_fragment)
+
+                val action = NavGraphDirections.actionGlobalLoginFragment()
+                findNavController().navigate(action)
             }
         }
 
@@ -55,8 +58,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             },
             onPostClick = { clickedPost ->
                 viewModel.savePostToLocal(clickedPost)
-                val bundle = Bundle().apply { putString("postId", clickedPost.id) }
-                findNavController().navigate(R.id.action_home_fragment_to_post_fragment, bundle)
+
+                val action = HomeFragmentDirections.actionHomeFragmentToPostFragment(clickedPost.id)
+                findNavController().navigate(action)
             }
         )
 

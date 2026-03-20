@@ -69,6 +69,10 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
         viewModel.authState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ResourceState.Loading -> {
+                    buttonSelectPhoto.isEnabled = false
+                    editTextUsername.isEnabled = false
+                    editTextEmail.isEnabled = false
+                    editTextPassword.isEnabled = false
                     buttonSignup.isEnabled = false
                     buttonSignup.setText(R.string.loading_creating_account)
                 }
@@ -82,10 +86,15 @@ class SignUpFragment : Fragment(R.layout.fragment_signup) {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
+                    val action = SignUpFragmentDirections.actionSignUpFragmentToHomeFragment()
+                    findNavController().navigate(action)
                 }
 
                 is ResourceState.Error -> {
+                    buttonSelectPhoto.isEnabled = true
+                    editTextUsername.isEnabled = true
+                    editTextEmail.isEnabled = true
+                    editTextPassword.isEnabled = true
                     buttonSignup.isEnabled = true
                     buttonSignup.setText(R.string.signup_button)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()

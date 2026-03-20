@@ -52,12 +52,14 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
                     val books = response.body()?.items ?: emptyList()
                     _searchResultsState.value = ResourceState.Success(books)
                 } else {
-                    _searchResultsState.value = ResourceState.Error("Error response: ${response.code()}")
+                    _searchResultsState.value =
+                        ResourceState.Error("Error response: ${response.code()}")
                 }
             }
 
             override fun onFailure(call: retrofit2.Call<BookSearchResponse>, t: Throwable) {
-                _searchResultsState.value = ResourceState.Error("Failed to search books: ${t.message}")
+                _searchResultsState.value =
+                    ResourceState.Error("Failed to search books: ${t.message}")
             }
         })
     }
