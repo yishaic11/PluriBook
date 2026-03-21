@@ -23,7 +23,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val commentDao = app.database.commentDao()
 
     private val userRepository = UserRepository(userDao)
-    private val postRepository = PostRepository(postDao, userDao)
+    private val postRepository = PostRepository(postDao, userDao, app.sharedPreferences)
     private val commentRepository = CommentRepository(commentDao, userRepository)
 
     val currentUserId = userRepository.getCurrentUserId()

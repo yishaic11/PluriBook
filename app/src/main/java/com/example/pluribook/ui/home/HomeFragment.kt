@@ -13,14 +13,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.pluribook.NavGraphDirections
-import com.example.pluribook.PluribookApplication
 import com.example.pluribook.R
 import com.google.android.material.button.MaterialButton
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
@@ -37,13 +33,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val buttonLogout = view.findViewById<MaterialButton>(R.id.button_logout_home)
 
         buttonLogout.setOnClickListener {
-            val database = (requireActivity().application as PluribookApplication).database
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    database.clearAllTables()
-                }
-                FirebaseAuth.getInstance().signOut()
-
+            viewModel.logoutUser {
                 val action = NavGraphDirections.actionGlobalLoginFragment()
                 findNavController().navigate(action)
             }
@@ -90,7 +80,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             centralProgress.visibility =
                 if (isInitialLoading && isListEmpty) View.VISIBLE else View.GONE
             swipeRefresh.isRefreshing = isInitialLoading && !isListEmpty
-
 
             if (loadState.source.append.endOfPaginationReached && !isListEmpty) {
                 viewModel.loadMorePosts()

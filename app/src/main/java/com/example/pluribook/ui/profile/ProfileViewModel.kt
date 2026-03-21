@@ -20,7 +20,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private val app = application as PluribookApplication
     private val postDao = app.database.postDao()
     private val userDao = app.database.userDao()
-    private val repository = PostRepository(postDao, userDao)
+    private val repository = PostRepository(postDao, userDao, app.sharedPreferences)
     val userRepository = UserRepository(app.database.userDao())
 
     private val _userProfileState = MutableLiveData<ResourceState<User>>()

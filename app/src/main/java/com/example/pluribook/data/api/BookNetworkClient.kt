@@ -28,7 +28,7 @@ class AuthInterceptor : Interceptor {
 
 interface BookApi {
     @GET("volumes")
-    fun fetchBooks(@Query("q") query: String): Call<BookSearchResponse>
+    suspend fun fetchBooks(@Query("q") query: String): BookSearchResponse
 }
 
 object BookNetworkClient {
