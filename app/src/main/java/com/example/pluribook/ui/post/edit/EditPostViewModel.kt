@@ -19,7 +19,8 @@ import kotlinx.coroutines.launch
 class EditPostViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = (application as PluribookApplication)
-    private val repository = PostRepository(app.database.postDao(), app.database.userDao())
+    private val repository =
+        PostRepository(app.database.postDao(), app.database.userDao(), app.sharedPreferences)
 
     private val _originalPost = MutableLiveData<ResourceState<Post>>()
     val originalPost: LiveData<ResourceState<Post>> = _originalPost

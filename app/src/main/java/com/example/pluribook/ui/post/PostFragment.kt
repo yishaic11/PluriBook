@@ -90,12 +90,18 @@ class PostFragment : Fragment(R.layout.fragment_post) {
                     scrollView.alpha = 0.5f
                     buttonPostOptions.isEnabled = false
                 }
+
                 is ResourceState.Success -> {
                     progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "Post deleted successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Post deleted successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     setFragmentResult("post_request", bundleOf("post_deleted" to true))
                     findNavController().navigateUp()
                 }
+
                 is ResourceState.Error -> {
                     progressBar.visibility = View.GONE
                     scrollView.alpha = 1.0f

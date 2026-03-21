@@ -10,8 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.pluribook.PluribookApplication
 import com.example.pluribook.TAG
 import com.example.pluribook.data.api.BookItem
-import com.example.pluribook.data.api.BookNetworkClient
-import com.example.pluribook.data.api.BookSearchResponse
 import com.example.pluribook.data.model.Post
 import com.example.pluribook.data.repository.PostRepository
 import com.example.pluribook.utils.ResourceState
@@ -22,9 +20,7 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
     private val app = (application as PluribookApplication)
     private val postDao = app.database.postDao()
     private val userDao = app.database.userDao()
-    private val repository = PostRepository(
-        postDao, userDao
-    )
+    private val repository = PostRepository(postDao, userDao, app.sharedPreferences)
 
     private val _postState = MutableLiveData<ResourceState<Unit>>()
     val postState: LiveData<ResourceState<Unit>> = _postState
@@ -40,28 +36,15 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
 
         _searchResultsState.value = ResourceState.Loading
 
-        val request = BookNetworkClient.bookApi.fetchBooks(query)
-
-        request.enqueue(object : retrofit2.Callback<BookSearchResponse> {
-
-            override fun onResponse(
-                call: retrofit2.Call<BookSearchResponse>,
-                response: retrofit2.Response<BookSearchResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val books = response.body()?.items ?: emptyList()
-                    _searchResultsState.value = ResourceState.Success(books)
-                } else {
-                    _searchResultsState.value =
-                        ResourceState.Error("Error response: ${response.code()}")
-                }
-            }
-
-            override fun onFailure(call: retrofit2.Call<BookSearchResponse>, t: Throwable) {
+        viewModelScope.launch {
+            try {
+                val books = repository.searchBooks(query)
+                _searchResultsState.value = ResourceState.Success(books)
+            } catch (e: Exception) {
                 _searchResultsState.value =
-                    ResourceState.Error("Failed to search books: ${t.message}")
+                    ResourceState.Error("Failed to search books: ${e.message}")
             }
-        })
+        }
     }
 
     fun createPost(imageUri: Uri?, description: String) {
