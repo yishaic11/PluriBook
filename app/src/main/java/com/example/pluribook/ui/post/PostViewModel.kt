@@ -21,17 +21,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val postDao = app.database.postDao()
     private val userDao = app.database.userDao()
     private val commentDao = app.database.commentDao()
+
     private val userRepository = UserRepository(userDao)
     private val postRepository = PostRepository(postDao, userDao)
-    private val commentRepository = CommentRepository(commentDao)
+    private val commentRepository = CommentRepository(commentDao, userRepository)
 
     val currentUserId = userRepository.getCurrentUserId()
 
     private val _postState = MutableLiveData<ResourceState<Post>>()
     val postState: LiveData<ResourceState<Post>> = _postState
-
-    private val _deleteState = MutableLiveData<ResourceState<Unit>>()
-    val deleteState: LiveData<ResourceState<Unit>> = _deleteState
 
     private val _senderName = MutableLiveData<String>()
     val senderName: LiveData<String> = _senderName
@@ -44,8 +42,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     private var senderSyncJob: Job? = null
     private var senderListener: ListenerRegistration? = null
+
     private var postSyncJob: Job? = null
     private var postListener: ListenerRegistration? = null
+
+    private val _deleteState = MutableLiveData<ResourceState<Unit>>()
+    val deleteState: LiveData<ResourceState<Unit>> = _deleteState
 
     fun loadPost(postId: String) {
         _postState.value = ResourceState.Loading
@@ -57,11 +59,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         postSyncJob?.cancel()
         postSyncJob = viewModelScope.launch(Dispatchers.IO) {
             launch { postRepository.fetchAndCachePost(postId) }
+
             postRepository.getPostByIdStream(postId).collect { post ->
                 withContext(Dispatchers.Main) {
                     if (post != null) {
                         _postState.value = ResourceState.Success(post)
                         _isOwner.value = post.senderId == currentUserId
+
                         if (senderListener == null) loadSenderProfile(post.senderId)
                     }
                 }
@@ -72,6 +76,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadSenderProfile(uid: String) {
         senderListener?.remove()
         senderListener = userRepository.startRealtimeUserSync(uid)
+
         senderSyncJob?.cancel()
         senderSyncJob = viewModelScope.launch(Dispatchers.IO) {
             launch { userRepository.fetchAndCacheUser(uid) }
@@ -84,8 +89,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getCommentCount(postId: String): LiveData<Int> =
-        commentRepository.getCommentStreamCount(postId).asLiveData()
+    fun getCommentCount(postId: String): LiveData<Int> {
+        return commentRepository.getCommentStreamCount(postId).asLiveData()
+    }
 
     fun toggleLike(postId: String) {
         val uid = currentUserId ?: return
@@ -94,7 +100,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             val post = currentState.data
             val isLiked = post.likedBy.contains(uid)
             val newLikedBy = if (isLiked) post.likedBy - uid else post.likedBy + uid
+
             _postState.value = ResourceState.Success(post.copy(likedBy = newLikedBy))
+
             viewModelScope.launch(Dispatchers.IO) {
                 postRepository.toggleLike(
                     postId,
@@ -114,7 +122,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                     _deleteState.value = ResourceState.Success(Unit)
                 } else {
                     _deleteState.value =
-                        ResourceState.Error("Failed to delete post. Please try again.")
+                        ResourceState.Error("Error deleting post. Please try again.")
                 }
             }
         }

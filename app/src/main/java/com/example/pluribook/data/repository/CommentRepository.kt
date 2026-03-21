@@ -6,6 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.pluribook.TAG
 import com.example.pluribook.data.local.CommentDao
+import com.example.pluribook.data.local.CommentWithSender
 import com.example.pluribook.data.model.Comment
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
@@ -18,7 +19,7 @@ import kotlinx.coroutines.tasks.await
 
 class CommentRepository(
     private val commentDao: CommentDao,
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val userRepository: UserRepository,
 ) {
 
     companion object {
@@ -26,13 +27,14 @@ class CommentRepository(
         private const val PAGE_SIZE = 10
     }
 
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private var commentListener: ListenerRegistration? = null
     private val commentsCollection = firestore.collection(COMMENTS_COLLECTION)
 
     private fun getPostCommentsQuery(postId: String) =
         commentsCollection.whereEqualTo("postId", postId)
 
-    fun getCommentStream(postId: String): Flow<PagingData<Comment>> {
+    fun getCommentStream(postId: String): Flow<PagingData<CommentWithSender>> {
         return Pager(
             config = PagingConfig(pageSize = PAGE_SIZE, enablePlaceholders = false),
             pagingSourceFactory = { commentDao.getPagedComments(postId) }
@@ -45,7 +47,6 @@ class CommentRepository(
 
     fun syncComments(postId: String) {
         commentListener?.remove()
-
         commentListener = getPostCommentsQuery(postId).addSnapshotListener { snapshot, e ->
             if (e != null) {
                 Log.e(TAG, "Listen failed for comments.", e)
@@ -54,16 +55,26 @@ class CommentRepository(
 
             snapshot?.let {
                 CoroutineScope(Dispatchers.IO).launch {
-                    for (dc in it.documentChanges) {
-                        val comment = dc.document.toObject(Comment::class.java)
-                        when (dc.type) {
+                    val missingUserIds = mutableSetOf<String>()
+
+                    for (documentChange in it.documentChanges) {
+                        val comment = documentChange.document.toObject(Comment::class.java)
+                        when (documentChange.type) {
                             DocumentChange.Type.ADDED, DocumentChange.Type.MODIFIED -> {
                                 commentDao.insertComment(comment)
+                                if (userRepository.getUserById(comment.senderId) == null) {
+                                    missingUserIds.add(comment.senderId)
+                                }
                             }
+
                             DocumentChange.Type.REMOVED -> {
                                 commentDao.deleteComment(comment.id)
                             }
                         }
+                    }
+
+                    missingUserIds.forEach { uid ->
+                        userRepository.fetchAndCacheUser(uid)
                     }
                 }
             }

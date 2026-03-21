@@ -38,12 +38,12 @@ class CommentFragment : Fragment(R.layout.fragment_comment) {
 
         buttonBack.setOnClickListener { findNavController().navigateUp() }
 
-        adapter = CommentAdapter(viewModel.currentUserId) { comment ->
+        adapter = CommentAdapter(viewModel.currentUserId) { item ->
             AlertDialog.Builder(requireContext())
                 .setTitle("Comment Options")
                 .setItems(arrayOf("Delete Comment")) { _, which ->
                     if (which == 0) {
-                        viewModel.deleteComment(comment.id)
+                        viewModel.deleteComment(item.comment.id)
                     }
                 }.show()
         }
