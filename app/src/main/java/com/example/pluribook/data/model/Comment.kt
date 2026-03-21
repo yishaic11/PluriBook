@@ -9,10 +9,8 @@ data class Comment(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val postId: String = "",
     val senderId: String = "",
-    val senderName: String = "",
-    val senderPhotoUrl: String = "",
     val text: String = "",
     val createdAt: Long = System.currentTimeMillis()
 ) {
-    constructor() : this("", "", "", "", "", "", 0L)
+    constructor() : this("", "", "", "", 0L)
 }
