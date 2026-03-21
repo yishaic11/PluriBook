@@ -202,7 +202,6 @@ class PostRepository(
 
             } else {
                 var query = firestore.collection(POSTS_COLLECTION)
-                    .orderBy("createdAt", Query.Direction.DESCENDING)
                     .limit(PAGE_SIZE.toLong())
 
                 lastVisibleDoc?.let { query = query.startAfter(it) }
@@ -316,7 +315,7 @@ class PostRepository(
                 try {
                     storage.reference.child("$POST_IMAGES_FOLDER/$postId.jpg").delete().await()
                 } catch (e: Exception) {
-                    Log.w(TAG, "Image not found or already deleted")
+                    Log.w(TAG, "Image not found or already deleted: ${e.message}")
                 }
 
                 firestore.collection(POSTS_COLLECTION).document(postId).delete().await()
